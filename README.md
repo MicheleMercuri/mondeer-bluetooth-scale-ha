@@ -161,6 +161,7 @@ with the device name, BT MAC OUI, and a couple of `pkt dev=...` log lines.
 ```
 
 ### Android companion app — WeighAi
+<img width="1003" height="2048" alt="Android companion app - WeighAi" src="https://github.com/user-attachments/assets/c80b8516-6bbe-441f-b8d9-b4e0ae3c973d" />
 
 A native Kotlin/Compose app for daily users. Single-user privacy by design:
 each phone subscribes only to the MQTT topic of its owner, no family data
