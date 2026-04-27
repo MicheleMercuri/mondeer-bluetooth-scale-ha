@@ -17,7 +17,8 @@ data to Home Assistant.
 
 A weighing in action (10 s clip — step on the scale, the listener catches
 the BLE advertising, the Telegram notification arrives):
-[**▶ watch the video**](screenshots/video.mp4).
+
+https://github.com/user-attachments/assets/824917a9-eb28-4c1b-8bd9-1f998bba79bc
 
 Telegram notification example:
 
