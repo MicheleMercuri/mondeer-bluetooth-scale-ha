@@ -1,0 +1,17 @@
+# Android build artefacts
+build/
+.gradle/
+.kotlin/
+local.properties
+*.apk
+*.aab
+.idea/
+.cxx/
+captures/
+
+# Asset sorgente icona (potenzialmente copyright)
+app_icon_source.png
+
+# Log e debug runtime
+*.log
+listener_debug.log

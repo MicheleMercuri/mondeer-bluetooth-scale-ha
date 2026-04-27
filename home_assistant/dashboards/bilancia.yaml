@@ -92,7 +92,7 @@ views:
         show_weather_background: true
         entity: person.user1
         show_watch_battery: true
-        connection_sensor: sensor.s24mm_wifi_connection
+        connection_sensor: sensor.YOUR_PHONE_wifi_connection
         zone_2: zone.ite_v_de_fazio
         travel_sensor_2: sensor.user1_to_home
         watch_battery_sensor: sensor.galaxy_watch8_4wjb_battery_level
@@ -448,9 +448,9 @@ views:
         show_weather_background: true
         entity: person.user2
         show_watch_battery: false
-        battery_sensor: sensor.sm_a336b_battery_level
-        battery_state_sensor: sensor.sm_a336b_battery_state
-        connection_sensor: sensor.sm_a336b_wi_fi_connection
+        battery_sensor: sensor.YOUR_PHONE2_battery_level
+        battery_state_sensor: sensor.YOUR_PHONE2_battery_state
+        connection_sensor: sensor.YOUR_PHONE2_wi_fi_connection
         zone_2: zone.ite_v_de_fazio
         travel_sensor_2: sensor.user2_to_home
         distance_sensor_2: sensor.proximity_user2_distance

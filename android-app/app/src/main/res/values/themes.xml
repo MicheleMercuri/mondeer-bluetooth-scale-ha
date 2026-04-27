@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Theme di base — i colori veri sono gestiti da Compose Material 3 con
+         dynamic color (Material You) su Android 12+. Questo theme XML serve
+         solo per il splash/window prima che Compose prenda il controllo. -->
+    <style name="Theme.Bilancia" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

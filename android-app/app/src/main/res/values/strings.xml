@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Nome app: "WeighAi" = Weigh (pesare) + AI (classifier nearest-centroid +
+         insight Gemini settimanali). Pronuncia "wei-ai". -->
+    <string name="app_name">WeighAi</string>
+
+    <!-- Setup wizard -->
+    <string name="setup_title">Configurazione</string>
+    <string name="setup_mqtt_host">Indirizzo broker MQTT</string>
+    <string name="setup_mqtt_port">Porta</string>
+    <string name="setup_mqtt_user">Utente</string>
+    <string name="setup_mqtt_pass">Password</string>
+    <string name="setup_who_am_i">Tu chi sei?</string>
+    <string name="setup_save">Salva e connetti</string>
+
+    <!-- Home -->
+    <string name="home_title">Bilancia</string>
+    <string name="home_no_readings">Nessuna pesata ancora</string>
+    <string name="home_last_reading">Ultima pesata</string>
+    <string name="home_kg_unit">kg</string>
+
+    <!-- Detail -->
+    <string name="detail_chart_period_week">7 giorni</string>
+    <string name="detail_chart_period_month">1 mese</string>
+    <string name="detail_chart_period_3months">3 mesi</string>
+    <string name="detail_chart_period_year">1 anno</string>
+    <string name="detail_metric_weight">Peso</string>
+    <string name="detail_metric_bmi">IMC</string>
+    <string name="detail_metric_fat">Massa grassa</string>
+    <string name="detail_metric_water">Acqua</string>
+    <string name="detail_metric_muscle">Muscoli</string>
+    <string name="detail_metric_bone">Ossa</string>
+    <string name="detail_metric_visceral">Grasso viscerale</string>
+    <string name="detail_metric_bmr">Metabolismo basale</string>
+
+    <!-- Notifiche -->
+    <string name="notif_channel_name">Nuova pesata</string>
+    <string name="notif_channel_desc">Notifiche quando arriva una nuova pesata da Home Assistant</string>
+    <string name="notif_new_weighing_title">⚖️ Nuova pesata</string>
+
+    <!-- Bottom nav -->
+    <string name="nav_home">Home</string>
+    <string name="nav_history">Storico</string>
+    <string name="nav_settings">Impostazioni</string>
+
+    <!-- Health Connect -->
+    <string name="hc_export_label">Esporta su Health Connect</string>
+    <string name="hc_share_label">Condividi report</string>
+</resources>

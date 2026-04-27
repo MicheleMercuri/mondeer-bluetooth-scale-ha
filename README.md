@@ -2,7 +2,10 @@
 
 A Python BLE listener for **Mondeer Bluetooth bathroom scales** (and
 the OEM family they belong to), with a Home Assistant integration via
-MQTT.
+MQTT, plus a **native Android companion app** (Kotlin/Compose) that
+shows live readings, body composition gauges and exports to **Health
+Connect** (so Samsung Health, Google Fit, Fitbit etc. read the data
+automatically).
 
 The original Android app (`com.mondeer.scale`) stopped working on
 Android 14+ and the manufacturer never released an update. This project
@@ -144,6 +147,10 @@ with the device name, BT MAC OUI, and a couple of `pkt dev=...` log lines.
 ├── home_assistant/
 │   ├── packages/bilancia.yaml # MQTT sensors + helpers + automation
 │   └── dashboards/bilancia.yaml
+├── android-app/               # WeighAi — Kotlin/Compose companion app
+│   ├── app/                   # Compose UI, MQTT subscriber, Health Connect
+│   ├── releases/v1.0.0/       # release notes
+│   └── README.md
 ├── deploy/
 │   └── windows/               # PowerShell scripts for Task Scheduler
 └── docs/
@@ -152,6 +159,23 @@ with the device name, BT MAC OUI, and a couple of `pkt dev=...` log lines.
     ├── DEPLOY.md              # deployment notes (Windows/Linux)
     └── HOME_ASSISTANT.md      # MQTT + HA integration details
 ```
+
+### Android companion app — WeighAi
+
+A native Kotlin/Compose app for daily users. Single-user privacy by design:
+each phone subscribes only to the MQTT topic of its owner, no family data
+crosses devices. Features:
+
+- Live weight + animated 3D-style hero gauge with neon glow
+- Mini ring-gauges for fat / water / muscle / bone / visceral
+- Trend chart (week / month / year) per metric
+- Health Connect export — Samsung Health, Google Fit, Fitbit etc. read
+  from there automatically
+- Push notification refresh via HA Companion App deep link
+
+See [`android-app/`](android-app/) for build instructions and
+[`android-app/releases/v1.0.0/RELEASE_NOTES.md`](android-app/releases/v1.0.0/RELEASE_NOTES.md)
+for the changelog.
 
 ---
 

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Health Connect: write biometrici (no read serve, scriviamo soltanto). -->
+    <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+    <uses-permission android:name="android.permission.health.WRITE_BODY_FAT" />
+    <uses-permission android:name="android.permission.health.WRITE_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_BASAL_METABOLIC_RATE" />
+    <uses-permission android:name="android.permission.health.WRITE_BODY_WATER_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS" />
+
+    <queries>
+        <!-- Health Connect provider (Android 14+ è preinstallato; sotto va da Play). -->
+        <package android:name="com.google.android.apps.healthdata" />
+        <!-- Permission rationale (chiamato da HC se l'utente clicca privacy). -->
+        <intent>
+            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+        </intent>
+        <!-- Request permissions (intent lanciato dal contract HC). Senza
+             questo, Android 11+ (package-visibility) filtra l'Intent e il
+             contract ritorna granted=0 senza mostrare dialog. -->
+        <intent>
+            <action android:name="androidx.health.ACTION_REQUEST_PERMISSIONS" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".BilanciaApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Bilancia"
+        tools:targetApi="34">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Bilancia">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Deep link weighai://main: l'automation HA "Bilancia · Push
+                 app WeighAi" usa questo schema come clickAction della
+                 notifica push. All'apertura facciamo refresh MQTT. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="weighai" />
+            </intent-filter>
+
+            <!-- Health Connect permission rationale (HC come app dedicata,
+                 Android 13 e versioni HC vecchie). -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+
+            <!-- Health Connect integrato nel sistema (Android 14+). Senza
+                 questo intent filter HC non riconosce l'app come "che
+                 vuole permessi salute" e non la lista nelle Impostazioni.
+                 Sintomo: l'app non appare in Health Connect → App e dati. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

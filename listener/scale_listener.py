@@ -1,98 +1,149 @@
-"""Permanent BLE listener for Mondeer / WanKa C1 / CE-Link OEM scales.
+"""Listener BLE bilancia Mondeer (POC).
 
-The scale powers on for ~10 seconds when somebody steps on it, advertises a
-``WanKa C1`` BLE peripheral with primary service UUID ``0xcc08``, and then
-powers off automatically. To capture every weighing this listener keeps an
-active scanner running in background and connects on-the-fly when it sees
-the advertising packet.
+La bilancia si accende solo durante la pesata e si spegne dopo pochi
+secondi. Per intercettare la misura serve uno scanner permanente che si
+attacchi al volo quando vede l'advertising. Quando la bilancia si spegne
+il client si disconnette e torna in scan.
 
-High-level session flow once a connection is established:
-
-  1. Send ``WAKE_PACKET`` on a write characteristic (round-robin on ec01..ec04).
-  2. Receive ``device info`` (cmd=2, data=2)  → reply with binding match
-     (cmd=2, data=104) carrying the configured ``family_id``.
-  3. Scale ACKs the binding (cmd=5, data=104) → send the family profiles
-     (cmd=2, data=102): one ``ae`` payload per user (16 bytes each).
-  4. Scale ACKs profiles (cmd=5, data=102) → send time sync
-     (cmd=2, data=103) so the scale's RTC matches the listener.
-  5. Scale streams weight records (data=4). A "preliminary" record carries
-     just the weight (BIA fields are 0xFFFF); a "complete" record adds
-     fat / water / bone / muscle / visceral / kcal / BMI.
-
-Run with ``python -m listener.scale_listener``. Stop with Ctrl+C.
+Uso: python scale_listener.py
+Stop: Ctrl+C
 """
 from __future__ import annotations
 
 import asyncio
-import json as _json_mod
 import logging
-import os
-import subprocess as _sp
 import sys
-from datetime import datetime as _dt
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
+import threading
 from typing import Optional
 
 from bleak import BleakClient, BleakScanner
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-from .config import Config, Profile, get_config  # noqa: F401
-from .ha_push import already_pushed, mark_pushed, push_weight
+sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent))
 from .parser import (
+    parse_ble_packet,
+    parse_weight_payload,
+    parse_all_weight_records,
     FrameReassembler,
     LogicalFrame,
-    build_ab_payload,
-    build_ack_packet,
+    build_packets,
     build_ad_payload,
     build_ae_payload,
-    build_packets,
-    parse_all_weight_records,
-    parse_ble_packet,
+    build_ab_payload,
+    build_ack_packet,
 )
+from .ha_push import (
+    push_weight, already_pushed, mark_pushed,
+    publish_inquiry, cancel_inquiry,
+)
+from .classifier import classify, save_sample, MIN_SAMPLES_PER_USER, CONFIDENCE_THRESHOLD
+
+FAMILY_PROFILES = [
+    {"user_id": 1, "name": "michele",     "sex": 1, "age": 52, "height": 172, "wmin": 61, "wmax": 69, "is_admin": True},
+    {"user_id": 2, "name": "maria_luisa", "sex": 0, "age": 51, "height": 169, "wmin": 49, "wmax": 55, "is_admin": False},
+    {"user_id": 3, "name": "matilde",     "sex": 0, "age": 14, "height": 155, "wmin": 53, "wmax": 60, "is_admin": False},
+]
+FAMILY_ID = 1
 
 
-# ---------------------------------------------------------------------------
-# Constants (BLE-level)
-# ---------------------------------------------------------------------------
+def refresh_profiles_from_ha() -> None:
+    """Aggiorna FAMILY_PROFILES leggendo gli helpers HA (input_number / input_select).
+
+    Se la chiamata fallisce, mantiene i defaults hardcoded.
+    """
+    import urllib.request
+    import json as _json
+    from .ha_push import HA_BASE_URL, HA_TOKEN
+
+    def _state(entity_id):
+        url = f"{HA_BASE_URL}/api/states/{entity_id}"
+        req = urllib.request.Request(url, headers={"Authorization": f"Bearer {HA_TOKEN}"})
+        with urllib.request.urlopen(req, timeout=3.0) as r:
+            return _json.loads(r.read())["state"]
+
+    for p in FAMILY_PROFILES:
+        n = p["name"]
+        try:
+            sex_str = _state(f"input_select.bilancia_{n}_sesso")
+            p["sex"] = 1 if sex_str.upper() == "M" else 0
+            p["age"] = int(float(_state(f"input_number.bilancia_{n}_eta")))
+            p["height"] = int(float(_state(f"input_number.bilancia_{n}_altezza")))
+            p["wmin"] = float(_state(f"input_number.bilancia_{n}_peso_min"))
+            p["wmax"] = float(_state(f"input_number.bilancia_{n}_peso_max"))
+            log.info("profile %s loaded from HA: sex=%d age=%d h=%d w=%g-%g",
+                     n, p["sex"], p["age"], p["height"], p["wmin"], p["wmax"])
+        except Exception as e:
+            log.warning("profile %s: HA fetch failed (%s), using default", n, e)
+
+
+def match_profile(record) -> str:
+    """Identifica il familiare confrontando sex+age+height con FAMILY_PROFILES.
+
+    Se sex/age/height sono tutti 0 (record peso "preliminare" senza
+    body composition completata), fallback su range peso wmin/wmax.
+    """
+    for p in FAMILY_PROFILES:
+        if (record.sex == p["sex"]
+                and record.age == p["age"]
+                and record.height_cm == p["height"]):
+            return p["name"]
+    # Fallback: record senza profilo associato → match per range peso
+    if record.sex == 0 and record.age == 0 and record.height_cm == 0:
+        candidates = [p for p in FAMILY_PROFILES
+                      if p["wmin"] <= record.weight_kg <= p["wmax"]]
+        if len(candidates) == 1:
+            log.info("match by weight range only: %s (%.1fkg in [%g,%g])",
+                     candidates[0]["name"], record.weight_kg,
+                     candidates[0]["wmin"], candidates[0]["wmax"])
+            return candidates[0]["name"]
+        if len(candidates) > 1:
+            log.warning("ambiguous weight match for %.1fkg: %s",
+                        record.weight_kg,
+                        [c["name"] for c in candidates])
+    return f"unknown(sex={record.sex},age={record.age},h={record.height_cm})"
 
 SERVICE_UUID = "0000cc08-0000-1000-8000-00805f9b34fb"
 NAME_HINTS = ("mondeer", "scale", "cheng", "ce-link", "celink", "wanka")
-
 RECONNECT_COOLDOWN_S = 1.5
-
-# The scale stays on ~10 seconds. Short timeout + several attempts: when
-# Windows is "ready" it connects in <1s, otherwise we cut early.
-CONNECT_TIMEOUT_S = 4.0
+# La bilancia si spegne in ~10s totali. Timeout corto + più tentativi:
+# alterniamo tentativi rapidi (per cogliere la finestra in cui il chip è
+# pronto) e un pre-pair al 3° tentativo (forza Windows a registrare il
+# bond, abbattendo il "pairing trasparente" da 30s a ~2s).
+CONNECT_TIMEOUT_S = 8.0
 CONNECT_MAX_ATTEMPTS = 6
 
-# 20-byte wake packet: header [0x03,0x04,0x02,0x00] + zero payload. Sent on
-# the first write characteristic right after connect to nudge the scale
-# into emitting its device info frame.
 WAKE_PACKET = bytes([
     0x03, 0x04, 0x02, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 ])
 
-
-# ---------------------------------------------------------------------------
-# Logging + metrics setup
-# ---------------------------------------------------------------------------
-
 try:
     sys.stdout.reconfigure(line_buffering=True)
 except Exception:
     pass
 
-CFG: Config = get_config()
-PROFILES: list[Profile] = list(CFG.profiles)
+import os
+from logging.handlers import RotatingFileHandler
 
-_state_dir = Path(CFG.state_dir).expanduser()
-_state_dir.mkdir(parents=True, exist_ok=True)
-_log_file = _state_dir / "listener.log"
-_metrics_file = _state_dir / "metrics.json"
+_log_dir = os.environ.get("LOCALAPPDATA", os.path.expanduser("~"))
+_log_dir = os.path.join(_log_dir, "BilanciaMondeer")
+os.makedirs(_log_dir, exist_ok=True)
+_log_file = os.path.join(_log_dir, "listener.log")
+
+# Cartella mirror su Google Drive: il listener scrive log+metrics ANCHE qui,
+# così posso leggerli da un altro PC senza accesso fisico al minipc.
+# Auto-localizzata: il poc è in <drive>:\Il mio Drive\013. APP HA PYTHON\bilancia mondeer\poc\
+# La mirror è la sibling cartella runtime-mipc/.
+_mirror_dir = os.path.normpath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "runtime-mipc"
+))
+try:
+    os.makedirs(_mirror_dir, exist_ok=True)
+    _mirror_log = os.path.join(_mirror_dir, "listener.log")
+except Exception:
+    _mirror_log = None
 
 _root = logging.getLogger()
 _root.setLevel(logging.INFO)
@@ -101,13 +152,111 @@ _fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 _fh = RotatingFileHandler(_log_file, maxBytes=2_000_000, backupCount=3, encoding="utf-8")
 _fh.setFormatter(_fmt)
 _root.addHandler(_fh)
+if _mirror_log:
+    try:
+        _fh_mirror = RotatingFileHandler(_mirror_log, maxBytes=2_000_000,
+                                         backupCount=3, encoding="utf-8")
+        _fh_mirror.setFormatter(_fmt)
+        _root.addHandler(_fh_mirror)
+    except Exception:
+        pass
 if sys.stdout and getattr(sys.stdout, "isatty", lambda: False)():
     _ch = logging.StreamHandler(sys.stdout)
     _ch.setFormatter(_fmt)
     _root.addHandler(_ch)
 
-log = logging.getLogger("listener")
+log = logging.getLogger("mondeer")
 
+
+# ---------------------------------------------------------------------------
+# Debug log via MQTT: ogni log INFO+ viene anche pubblicato su un topic
+# MQTT retained con le ultime 80 righe. Permette di leggere lo stato del
+# listener da remoto via HA REST API senza scaricare il file di log.
+# ---------------------------------------------------------------------------
+import time as _time_for_log
+import threading as _threading_for_log
+import traceback as _traceback_for_log
+from collections import deque
+
+_recent_log_buffer = deque(maxlen=80)
+_recent_log_lock = _threading_for_log.Lock()
+_last_publish_time = [0.0]
+
+_error_buffer = deque(maxlen=20)
+_error_buffer_lock = _threading_for_log.Lock()
+
+
+class MQTTLogHandler(logging.Handler):
+    """Forward every log line to MQTT.
+
+    Pubblica AD OGNI log INFO+ (qos=0, retained) — il broker mosquitto può
+    facilmente gestire decine di publish/sec. Il debouncer precedente
+    collassava troppo i log durante i picchi di startup/handshake e
+    rendeva il debug remoto inutile.
+
+    Errori (WARNING+) vanno anche su un topic dedicato con stack trace."""
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            with _recent_log_lock:
+                _recent_log_buffer.append(msg)
+                lines = list(_recent_log_buffer)
+            # Errori in buffer dedicato + traceback (se presente).
+            if record.levelno >= logging.WARNING:
+                tb = None
+                if record.exc_info:
+                    tb = "".join(_traceback_for_log.format_exception(*record.exc_info))
+                err_entry = {
+                    "ts": _dt.now().isoformat(timespec="seconds"),
+                    "level": record.levelname,
+                    "name": record.name,
+                    "msg": record.getMessage(),
+                }
+                if tb:
+                    err_entry["traceback"] = tb
+                with _error_buffer_lock:
+                    _error_buffer.append(err_entry)
+                    err_list = list(_error_buffer)
+                try:
+                    from .ha_push import publish_errors
+                    publish_errors(err_list)
+                except Exception:
+                    pass
+            # Publish ogni log line (no debouncer).
+            try:
+                from .ha_push import publish_recent_log
+                publish_recent_log(lines)
+            except Exception:
+                pass
+        except Exception:
+            pass
+
+
+# NB: l'MQTTLogHandler era qui ma è stato disabilitato all'avvio (registrato
+# DOPO che main() inizializza il client MQTT, vedi _enable_mqtt_log_handler()
+# chiamato dentro main(), in modo da evitare deadlock al primo log.info che
+# proverebbe a connettersi al broker prima che il client sia pronto).
+_mqtt_log = MQTTLogHandler()
+_mqtt_log.setFormatter(_fmt)
+_mqtt_log.setLevel(logging.INFO)
+
+
+def _enable_mqtt_log_handler() -> None:
+    """Attiva l'MQTT log forwarding DOPO che il client MQTT è già stato
+    creato la prima volta. Evita deadlock al primo log.info."""
+    if _mqtt_log not in _root.handlers:
+        _root.addHandler(_mqtt_log)
+        log.info("MQTT log handler attivato")
+
+# ---------------------------------------------------------------------------
+# Metriche e auto-recovery BT
+# ---------------------------------------------------------------------------
+
+import json as _json_mod
+from datetime import datetime as _dt
+
+_METRICS_FILE = os.path.join(_log_dir, "metrics.json")
 
 _METRICS = {
     "consecutive_failed_sessions": 0,
@@ -117,13 +266,13 @@ _METRICS = {
     "total_recoveries": 0,
     "last_failure_iso": None,
     "last_recovery_iso": None,
-    "session_history": [],  # last 50 sessions
+    "session_history": [],  # ultime 50 sessioni
 }
 
 
 def _metrics_load() -> None:
     try:
-        with _metrics_file.open("r", encoding="utf-8") as f:
+        with open(_METRICS_FILE, "r", encoding="utf-8") as f:
             saved = _json_mod.load(f)
         _METRICS.update({k: v for k, v in saved.items() if k in _METRICS})
     except FileNotFoundError:
@@ -134,10 +283,19 @@ def _metrics_load() -> None:
 
 def _metrics_save() -> None:
     try:
-        with _metrics_file.open("w", encoding="utf-8") as f:
+        with open(_METRICS_FILE, "w", encoding="utf-8") as f:
             _json_mod.dump(_METRICS, f, indent=2)
     except Exception as e:
         log.warning("metrics save failed: %r", e)
+    # Mirror su Google Drive (best-effort, ignora errori). Drive sync delay
+    # è ~30s ma è ok per debug post-mortem.
+    if _mirror_log:
+        try:
+            _mirror_metrics = os.path.join(_mirror_dir, "metrics.json")
+            with open(_mirror_metrics, "w", encoding="utf-8") as f:
+                _json_mod.dump(_METRICS, f, indent=2)
+        except Exception:
+            pass
 
 
 def _metrics_record_session(success: bool, attempts: int, duration_s: float) -> None:
@@ -164,129 +322,53 @@ _metrics_load()
 
 
 # ---------------------------------------------------------------------------
-# Auto-recovery (Windows only, requires admin)
+# Status snapshot periodico — vedi sensor.bilancia_listener_status su HA
 # ---------------------------------------------------------------------------
-
-async def _restart_bthserv() -> bool:
-    """Restart Windows ``bthserv`` to clear a stuck Bluetooth radio.
-
-    Some older BLE chipsets (e.g. Intel 7260) end up in an unrecoverable
-    state after a few failed sessions; only a service restart (or a full
-    reboot) brings them back. The listener triggers this automatically
-    after ``recovery_after_n_failed_sessions`` consecutive failures, and
-    only when ``enable_auto_recovery: true`` is set in the config.
-    """
-    if sys.platform != "win32":
-        log.warning("auto-recovery is Windows-only, skipping")
-        return False
-    log.warning("AUTO-RECOVERY: restarting Windows Bluetooth service")
-    try:
-        result = await asyncio.to_thread(
-            _sp.run,
-            ["powershell", "-NoProfile", "-Command",
-             "Restart-Service bthserv -Force -ErrorAction Stop"],
-            capture_output=True, text=True, timeout=15,
-        )
-        if result.returncode == 0:
-            log.info("AUTO-RECOVERY: bthserv restarted OK")
-            _METRICS["total_recoveries"] += 1
-            _METRICS["last_recovery_iso"] = _dt.now().isoformat(timespec="seconds")
-            _METRICS["consecutive_failed_sessions"] = 0
-            _metrics_save()
-            await asyncio.sleep(5.0)  # let bthserv stabilise
-            return True
-        log.error("AUTO-RECOVERY: bthserv restart failed (rc=%d): %s",
-                  result.returncode, result.stderr.strip())
-        return False
-    except Exception as e:
-        log.error("AUTO-RECOVERY exception: %r", e)
-        return False
-
-
-# ---------------------------------------------------------------------------
-# Profiles helpers
-# ---------------------------------------------------------------------------
-
-def refresh_profiles_from_ha() -> None:
-    """Optionally re-read the family profiles from HA helper entities.
-
-    The HA package ``home_assistant/packages/bilancia.yaml`` defines, for
-    each profile name in the config, helpers like
-    ``input_select.bilancia_<name>_sesso``,
-    ``input_number.bilancia_<name>_eta`` etc. so the user can edit the
-    family from a dashboard without restarting the listener. If the
-    helpers cannot be read, the values from ``config.yaml`` are kept.
-    """
-    if not CFG.ha_base_url or not CFG.ha_token:
-        return
-    import urllib.request
-
-    def _state(entity_id):
-        url = f"{CFG.ha_base_url}/api/states/{entity_id}"
-        req = urllib.request.Request(
-            url, headers={"Authorization": f"Bearer {CFG.ha_token}"}
-        )
-        with urllib.request.urlopen(req, timeout=3.0) as r:
-            return _json_mod.loads(r.read())["state"]
-
-    for p in PROFILES:
-        try:
-            sex_str = _state(f"input_select.bilancia_{p.name}_sesso")
-            p.sex = 1 if sex_str.upper() == "M" else 0
-            p.age = int(float(_state(f"input_number.bilancia_{p.name}_eta")))
-            p.height_cm = int(float(_state(f"input_number.bilancia_{p.name}_altezza")))
-            p.weight_min = float(_state(f"input_number.bilancia_{p.name}_peso_min"))
-            p.weight_max = float(_state(f"input_number.bilancia_{p.name}_peso_max"))
-            log.info("profile %s loaded from HA: sex=%d age=%d h=%d w=%g-%g",
-                     p.name, p.sex, p.age, p.height_cm, p.weight_min, p.weight_max)
-        except Exception as e:
-            log.warning("profile %s: HA fetch failed (%s), using config defaults",
-                        p.name, e)
-
-
-def match_profile(record) -> str:
-    """Match a weight record to a configured profile.
-
-    First, exact match on ``(sex, age, height_cm)`` (these are echoed back
-    by the scale on complete records once profiles have been registered).
-    For preliminary records the scale sends ``sex=age=height=0``: in that
-    case we fall back to weight-range matching, which only works if the
-    family ranges do not overlap. An ambiguous match returns ``unknown``
-    and the record is dropped.
-    """
-    for p in PROFILES:
-        if (record.sex == p.sex
-                and record.age == p.age
-                and record.height_cm == p.height_cm):
-            return p.name
-    if record.sex == 0 and record.age == 0 and record.height_cm == 0:
-        candidates = [p for p in PROFILES
-                      if p.weight_min <= record.weight_kg <= p.weight_max]
-        if len(candidates) == 1:
-            log.info("match by weight range only: %s (%.1fkg in [%g,%g])",
-                     candidates[0].name, record.weight_kg,
-                     candidates[0].weight_min, candidates[0].weight_max)
-            return candidates[0].name
-        if len(candidates) > 1:
-            log.warning("ambiguous weight match for %.1fkg: %s",
-                        record.weight_kg, [c.name for c in candidates])
-    return f"unknown(sex={record.sex},age={record.age},h={record.height_cm})"
-
-
-# ---------------------------------------------------------------------------
-# Session state
-# ---------------------------------------------------------------------------
-
-NOTIFY_COUNTER = [0]
-SESSION = {
-    "client": None,
-    "write_chars": [],
-    "binding_sent": False,
-    "profiles_sent": False,
-    "time_sent": False,
-    "loop": None,
-    "next_write_idx": 1,
+_STATUS = {
+    "phase": "init",
+    "last_pesata_at": None,
+    "last_pesata_user": None,
+    "last_pesata_kg": None,
+    "last_pesata_complete": None,
+    "last_error_at": None,
+    "last_error_msg": None,
+    "scale_in_advertising": False,
+    "rssi": None,
 }
+
+
+def set_phase(phase: str) -> None:
+    _STATUS["phase"] = phase
+
+
+def record_pesata(user: str, weight_kg: float, is_complete: bool) -> None:
+    _STATUS["last_pesata_at"] = _dt.now().isoformat(timespec="seconds")
+    _STATUS["last_pesata_user"] = user
+    _STATUS["last_pesata_kg"] = weight_kg
+    _STATUS["last_pesata_complete"] = is_complete
+
+
+def _status_publisher_thread():
+    import time as _t
+    from .ha_push import publish_status
+    while True:
+        try:
+            snapshot = dict(_STATUS)
+            a = _METRICS.get("total_connects_attempted", 0)
+            s = _METRICS.get("total_connects_succeeded", 0)
+            snapshot["total_attempts"] = a
+            snapshot["total_success"] = s
+            snapshot["success_rate"] = round(100 * s / a, 1) if a else None
+            snapshot["consecutive_fail"] = _METRICS.get("consecutive_failed_sessions", 0)
+            publish_status(snapshot)
+        except Exception:
+            pass
+        _t.sleep(30)
+
+
+_threading_for_log.Thread(
+    target=_status_publisher_thread, daemon=True, name="status_pub"
+).start()
 
 
 def looks_like_scale(device: BLEDevice, adv: AdvertisementData) -> bool:
@@ -297,12 +379,24 @@ def looks_like_scale(device: BLEDevice, adv: AdvertisementData) -> bool:
     return SERVICE_UUID.lower() in advertised
 
 
-# ---------------------------------------------------------------------------
-# Outbound frame helpers
-# ---------------------------------------------------------------------------
+def find_notify_char(client: BleakClient):
+    for service in client.services:
+        if service.uuid.lower() != SERVICE_UUID.lower():
+            continue
+        for char in service.characteristics:
+            if "notify" in char.properties:
+                return char
+    return None
+
+
+NOTIFY_COUNTER = [0]
+SESSION = {"client": None, "write_chars": [], "binding_sent": False,
+           "profiles_sent": False, "time_sent": False, "loop": None,
+           "next_write_idx": 1}
+
 
 async def send_ack(device_class: int, data_type: int) -> None:
-    """Send a cmd=5 ACK on the dedicated ``ec05`` (last write) characteristic."""
+    """Manda un ACK (cmd=5) sul canale dedicato ec05 (last write char)."""
     client = SESSION["client"]
     write_chars = SESSION["write_chars"]
     if client is None or not client.is_connected or not write_chars:
@@ -325,29 +419,28 @@ async def send_time_sync() -> None:
 
 
 async def send_family_profiles() -> None:
-    """Send all configured profiles in a single cmd=2 data=102 frame."""
+    """Invia i 3 profili famiglia in un unico frame cmd=2 data=102."""
     refresh_profiles_from_ha()
     payload = b""
-    for p in PROFILES:
+    for p in FAMILY_PROFILES:
         ae = build_ae_payload(
-            class_type=1 if p.is_admin else 0,
-            member_type=p.user_id,
-            user_id=p.user_id,
-            weight_low_kg=p.weight_min,
-            weight_high_kg=p.weight_max,
-            sex=p.sex, age=p.age, height_cm=p.height_cm,
+            class_type=1 if p["is_admin"] else 0,
+            member_type=p["user_id"],
+            user_id=p["user_id"],
+            weight_low_kg=p["wmin"],
+            weight_high_kg=p["wmax"],
+            sex=p["sex"], age=p["age"], height_cm=p["height"],
         )
         payload += ae
 
-    fid = CFG.family_id
     family_bytes = bytes([
-        fid & 0xFF, (fid >> 8) & 0xFF,
-        (fid >> 16) & 0xFF, (fid >> 24) & 0xFF,
+        FAMILY_ID & 0xFF, (FAMILY_ID >> 8) & 0xFF,
+        (FAMILY_ID >> 16) & 0xFF, (FAMILY_ID >> 24) & 0xFF,
     ])
     user_data = family_bytes + b"\x00" * 4
 
-    log.info(">>> sending %d profiles (cmd=2 data=102, %dB)",
-             len(PROFILES), len(payload))
+    log.info(">>> sending %d family profiles (cmd=2 data=102, %dB)",
+             len(FAMILY_PROFILES), len(payload))
     await send_frame(3, 2, 102, payload, chunk_struct_size=16,
                      user_data=user_data)
 
@@ -369,9 +462,9 @@ async def send_frame(device_class: int, cmd_type: int, data_type: int,
         if SESSION["next_write_idx"] >= len(write_chars) - 1:
             SESSION["next_write_idx"] = 1
         target = write_chars[idx]
-        # Prefer write-without-response: the full handshake must complete
-        # within ~10 s before the scale powers off, so we cannot afford to
-        # wait for an ACK on every packet.
+        # Privilegia write-without-response (no ack per ogni TX): l'handshake
+        # deve completare in <10s perché la bilancia si spegne se nessuno
+        # sta sopra. Con response=True ogni TX aspetta 1-2s di ack.
         use_wwr = "write-without-response" in target.properties
         log.info("TX dev=%d cmd=%d data=%d packet on %s (wwr=%s): %s",
                  device_class, cmd_type, data_type,
@@ -381,10 +474,6 @@ async def send_frame(device_class: int, cmd_type: int, data_type: int,
         except Exception as e:
             log.error("TX failed: %r", e)
 
-
-# ---------------------------------------------------------------------------
-# Notify callback / frame reassembly
-# ---------------------------------------------------------------------------
 
 def on_logical_frame(frame: LogicalFrame) -> None:
     log.info("FRAME dev=%d cmd=%d data=%d payload(%dB)=%s",
@@ -402,56 +491,71 @@ def on_logical_frame(frame: LogicalFrame) -> None:
         if not SESSION["binding_sent"]:
             SESSION["binding_sent"] = True
             log.info(">>> received device info, sending binding match (cmd=2 data=104)")
-            ad = build_ad_payload(
-                type_=0, subtype=1, family_id=CFG.family_id, last_id=0,
-            )
+            # Da c.java::m():
+            #   if (i.a() == null || i.a().q()):  i2=1 i3=0 → ad(0, 1, ...)
+            #   else:                             i3=2 i2=0 → ad(2, 0, ...)
+            # ad costruttore = ad(type, subtype, family_id, last_id).
+            # Listener stateless: usiamo il primo caso (type=0, subtype=1).
+            ad = build_ad_payload(type_=0, subtype=1, family_id=FAMILY_ID, last_id=0)
             if loop is not None:
                 asyncio.run_coroutine_threadsafe(
                     send_frame(3, 2, 104, ad, chunk_struct_size=8), loop)
 
+    # Ordine ufficiale (da c.java::a(c cVar) line 601-605 + line 736-744):
+    #   ack(104) → invio time sync (data=103) — c.java line 603 d().b(ab)
+    #   recv data=3 → invio family profiles (data=102) — c.java line 740
+    # NOTA: data=3 arriva DALLA bilancia subito dopo 104 ACK (è il "settings
+    # sync" col valore N della bilancia). L'app ufficiale ignora 103 ACK.
     if frame.device_class == 3 and frame.cmd_type == 5 and frame.data_type == 104:
-        if not SESSION["profiles_sent"]:
-            SESSION["profiles_sent"] = True
-            if loop is not None:
-                asyncio.run_coroutine_threadsafe(send_family_profiles(), loop)
-
-    if frame.device_class == 3 and frame.cmd_type == 5 and frame.data_type == 102:
         if not SESSION["time_sent"]:
             SESSION["time_sent"] = True
             if loop is not None:
                 asyncio.run_coroutine_threadsafe(send_time_sync(), loop)
 
+    if frame.device_class == 3 and frame.cmd_type == 2 and frame.data_type == 3:
+        if not SESSION["profiles_sent"]:
+            SESSION["profiles_sent"] = True
+            log.info(">>> received settings-sync (data=3), sending family profiles")
+            if loop is not None:
+                asyncio.run_coroutine_threadsafe(send_family_profiles(), loop)
+
     if frame.device_class == 3 and frame.data_type == 4:
         records = parse_all_weight_records(frame.payload)
         log.info("data=4 contains %d records", len(records))
-        # Accept records with a valid weight even if BIA is missing: a
-        # preliminary record is still useful (the dashboard merges old
-        # body comp via ha_push.get_last_body_comp).
         valid = [r for r in records if r.weight_kg and r.weight_kg > 5.0]
         if valid:
             best = max(valid, key=lambda r: r.timestamp_unix)
-            who = match_profile(best)
-            log.info("VALID WEIGHT %s %.1fkg fat=%s water=%s "
-                     "bone=%s muscle=%s visc=%s cal=%s bmi=%s "
-                     "(sex=%d age=%d h=%d ts=%d)",
-                     who, best.weight_kg, best.fat_pct, best.water_pct,
+            log.info("RECORD %s 1kg fat=%s water=%s bone=%s muscle=%s "
+                     "visc=%s bmi=%s (sex=%d age=%d h=%d ts=%d)",
+                     "complete" if best.fat_pct is not None else "preliminary",
+                     best.weight_kg, best.fat_pct, best.water_pct,
                      best.bone_kg, best.muscle_kg, best.visceral_fat,
-                     best.calorie_kcal, best.bmi, best.sex, best.age,
-                     best.height_cm, best.timestamp_unix)
-            if who.startswith("unknown"):
-                log.warning("profile not matched, skipping push")
-            elif already_pushed(who, best.timestamp_unix):
-                log.info("already pushed for %s ts=%d", who, best.timestamp_unix)
-            else:
-                # Synchronous push from the notify thread: the BLE radio may
-                # drop the connection right after data=4 arrives; pushing
-                # asynchronously could lose the reading if the event loop
-                # dies before the publish completes. Blocking ~hundred ms
-                # here is acceptable.
-                try:
-                    _do_push(who, best)
-                except Exception as e:
-                    log.error("sync push failed: %r", e)
+                     best.bmi, best.sex, best.age, best.height_cm,
+                     best.timestamp_unix)
+            # Reverse-engineer: l'app ufficiale (c.java::a(h hVar) →
+            # caso `f()==1 && e()==0 && c()<=0`) chiama `o()` che RIMANDA
+            # i profili familiari quando arriva un frame anonimo (user_id=0,
+            # age=0, owner_type=1). Senza questo step la bilancia non
+            # appoggia i profili e non calcola la BIA per la pesata in
+            # corso. NB: scattiamo sul PRIMO frame anonimo, indipendentemente
+            # dal flag (0=finale, 2=real-time): la bilancia inizia a mandare
+            # flag=2 per primi e dobbiamo "armare" i profili appena possibile,
+            # altrimenti il primo frame finale arriva senza BIA.
+            if (best.type == 1
+                    and best.user_id == 0
+                    and best.age == 0):
+                if SESSION.get("anonymous_resend_done") is not True:
+                    SESSION["anonymous_resend_done"] = True
+                    log.info(">>> weight frame anonymous (flag=%d, user_id=0, "
+                             "age=0): resend family profiles (mimicks "
+                             "official app::o() recovery)", best.flag)
+                    if loop is not None:
+                        asyncio.run_coroutine_threadsafe(
+                            send_family_profiles(), loop)
+            try:
+                _handle_weight_record(best)
+            except Exception as e:
+                log.error("weight handling failed: %r", e)
 
 
 def _do_push(who: str, weight) -> None:
@@ -468,6 +572,191 @@ def _do_push(who: str, weight) -> None:
                 "bmi": weight.bmi,
             }
         mark_pushed(who, weight.timestamp_unix, body_comp=body_comp)
+        record_pesata(who, weight.weight_kg, weight.fat_pct is not None)
+
+
+def _users_at_home(known_users: list) -> list:
+    """Restituisce il sottoinsieme di known_users la cui ``person.<name>``
+    è 'home' su HA. Se la chiamata fallisce, ritorna la lista completa
+    (best-effort, non vogliamo bloccare la pesata).
+
+    Usiamo l'entità ``person.<slug>`` (non device_tracker) perché aggrega
+    tutti i tracker dell'utente (telefono, watch, GPS, BT proximity).
+    """
+    from .ha_push import HA_BASE_URL, HA_TOKEN
+    if not HA_BASE_URL or not HA_TOKEN:
+        return list(known_users)
+    import urllib.request
+    import json as _j
+    out = []
+    for name in known_users:
+        try:
+            url = f"{HA_BASE_URL}/api/states/person.{name}"
+            req = urllib.request.Request(
+                url, headers={"Authorization": f"Bearer {HA_TOKEN}"}
+            )
+            with urllib.request.urlopen(req, timeout=2.0) as r:
+                state = _j.loads(r.read()).get("state", "")
+            if state == "home":
+                out.append(name)
+            else:
+                log.info("presence: %s is %r → excluded", name, state)
+        except Exception as e:
+            log.warning("presence check %s failed: %r — including conservatively",
+                        name, e)
+            out.append(name)
+    return out
+
+
+def _record_to_dict(weight) -> dict:
+    """Convert WeightFrame to a flat dict the classifier understands."""
+    return {
+        "weight_kg": weight.weight_kg,
+        "fat_pct": weight.fat_pct,
+        "water_pct": weight.water_pct,
+        "bone_kg": weight.bone_kg,
+        "muscle_kg": weight.muscle_kg,
+        "visceral_fat": weight.visceral_fat,
+        "bmi": weight.bmi,
+    }
+
+
+def _handle_weight_record(weight) -> None:
+    """Decide what to do with a fresh weight record:
+
+    1. If it's a preliminary (BIA missing): use the legacy weight-range match.
+       Cannot run the classifier on it (insufficient features).
+    2. If it's a complete record (BIA present): run the classifier.
+       - decision='auto'  → push directly under the predicted profile
+       - decision='ask'   → publish an MQTT inquiry, HA sends a Telegram
+                             keyboard, the user's reply lands as a callback
+                             and the listener finalises the push.
+
+    Anti-duplicate: a (user, timestamp) pair already pushed is skipped.
+    """
+    # ----- preliminary record -------------------------------------------
+    if weight.fat_pct is None:
+        who = match_profile(weight)
+        if who.startswith("unknown"):
+            log.warning("preliminary record: profile not matched, skipping push")
+            return
+        if already_pushed(who, weight.timestamp_unix):
+            log.info("preliminary already pushed for %s ts=%d",
+                     who, weight.timestamp_unix)
+            return
+        log.info("preliminary record matched by weight range to %s, pushing", who)
+        _do_push(who, weight)
+        return
+
+    # ----- complete record ----------------------------------------------
+    record_dict = _record_to_dict(weight)
+    all_users = [p["name"] for p in FAMILY_PROFILES]
+
+    # Presence filter: chi non è a casa non può essersi pesato. Se la
+    # presenza identifica un singolo candidato, salta classifier+Telegram.
+    at_home = _users_at_home(all_users)
+    log.info("presence filter: at_home=%s (out of %s)", at_home, all_users)
+
+    if len(at_home) == 1:
+        who = at_home[0]
+        log.info("PRESENCE-only auto: only %s is home, attributing weighing", who)
+        if already_pushed(who, weight.timestamp_unix):
+            log.info("complete already pushed for %s ts=%d",
+                     who, weight.timestamp_unix)
+            return
+        _do_push(who, weight)
+        # Sample comunque salvato: arricchisce il classifier per il futuro
+        # (quando ci saranno più persone in casa contemporaneamente).
+        try:
+            save_sample(who, record_dict)
+        except Exception as e:
+            log.warning("save_sample failed: %r", e)
+        return
+
+    # 0 a casa → strano, magari device_tracker confuso o il listener stesso
+    # vede come not_home; classifichiamo sull'intera famiglia, conservativi.
+    candidates = at_home if at_home else all_users
+    if len(at_home) == 0:
+        log.warning("nobody at home according to person.* — falling back to full classifier")
+
+    result = classify(record_dict, candidates)
+    log.info("CLASSIFIER: %s", result.reason)
+
+    if result.decision == "auto":
+        who = result.predicted_user
+        if already_pushed(who, weight.timestamp_unix):
+            log.info("complete already pushed for %s ts=%d",
+                     who, weight.timestamp_unix)
+            return
+        log.info("AUTO classification → %s (conf=%.2f)", who, result.confidence)
+        _do_push(who, weight)
+        # Auto-classified samples reinforce the centroids over time. Store
+        # them too — gives the classifier more data without bothering the user.
+        try:
+            save_sample(who, record_dict)
+        except Exception as e:
+            log.warning("save_sample failed: %r", e)
+        return
+
+    # decision == "ask" → publish MQTT inquiry, HA will Telegram-prompt
+    inquiry_id = f"{int(weight.timestamp_unix)}-{int(weight.weight_kg * 10)}"
+    # De-dupe: la bilancia spesso manda 2-3 weight frame complete consecutivi
+    # a 1-2s di distanza per la stessa pesata. Se mandiamo 1 ASK Telegram
+    # per ciascuno, l'utente riceve N notifiche identiche e (se conferma
+    # tutte) abbiamo N publish e quindi N notifiche di "Pesata pronta".
+    # Skipiamo se abbiamo già fatto ASK negli ultimi 60s di clock-bilancia.
+    last_ask_ts = SESSION.get("last_ask_ts", 0)
+    if abs(int(weight.timestamp_unix) - last_ask_ts) < 60:
+        log.info("ASK skipped for ts=%d (already asked at ts=%d, within 60s window)",
+                 weight.timestamp_unix, last_ask_ts)
+        return
+    SESSION["last_ask_ts"] = int(weight.timestamp_unix)
+    log.info("ASK via Telegram, inquiry_id=%s", inquiry_id)
+
+    # Capture state needed by the MQTT-thread callback (no closure on `weight`
+    # alone — store the dict too, so we can re-train).
+    def on_answer(answer: dict) -> None:
+        name = (answer or {}).get("name")
+        if not name:
+            log.warning("inquiry %s answered with no name: %r", inquiry_id, answer)
+            return
+        # Sanity check: validato sull'INTERA famiglia, non solo at_home.
+        # Caso d'uso: Maria Luisa è uscita senza il telefono → presence dice
+        # not_home ma è davvero a casa. L'utente conferma via Telegram e
+        # vogliamo accettarlo.
+        if name not in all_users:
+            log.warning("inquiry %s: answer %r is not a known user, ignoring",
+                        inquiry_id, name)
+            return
+        if already_pushed(name, weight.timestamp_unix):
+            log.info("complete already pushed for %s ts=%d (after Telegram)",
+                     name, weight.timestamp_unix)
+            return
+        log.info("Telegram → %s confirmed for ts=%d, pushing + training",
+                 name, weight.timestamp_unix)
+        try:
+            _do_push(name, weight)
+            save_sample(name, record_dict)
+        except Exception as e:
+            log.error("post-Telegram push failed: %r", e)
+
+    publish_inquiry(
+        inquiry_id=inquiry_id,
+        record_dict=record_dict,
+        predicted=result.predicted_user,
+        confidence=result.confidence,
+        reason=result.reason,
+        callback=on_answer,
+    )
+
+    # Timeout: if no Telegram answer in 5 minutes, drop the pending callback
+    # so memory does not leak. The next weighing of the same user can still
+    # be classified later (we did not push, so anti-duplicate won't block it).
+    def _timeout_drop():
+        cancel_inquiry(inquiry_id)
+        log.warning("inquiry %s timed out, dropped pending callback", inquiry_id)
+
+    threading.Timer(300.0, _timeout_drop).start()
 
 
 REASSEMBLER = FrameReassembler(on_logical_frame)
@@ -486,26 +775,25 @@ def on_notify(sender, data: bytearray) -> None:
     REASSEMBLER.feed(pkt)
 
 
-# ---------------------------------------------------------------------------
-# Connection management
-# ---------------------------------------------------------------------------
-
 async def _try_connect(device: BLEDevice) -> Optional[BleakClient]:
-    """Connect with intelligent backoff.
+    """Tenta il connect con backoff intelligente + pre-pair al 3° tentativo.
 
-    - Attempts 1-3: fast (4 s timeout, 0.3 s pause). The scale sometimes
-      needs one or two failed attempts before Windows clears the previous
-      session state.
-    - Attempt 4: best-effort ``pair_async`` before connect. On Windows
-      this can shortcut the "transparent pairing" delay (30 s → ~2 s).
-    - Attempts 5-6: longer pause (1.5 s) — give the chip more time.
+    - Tentativi 1-2: rapidi (4s timeout, 0.3s backoff). Spesso bastano se
+      Windows ha già il bond memorizzato.
+    - Tentativo 3: prima del connect prova `pair_async`. Forza Windows a
+      registrare il bond ora (utile alla prima sessione assoluta col chip
+      o dopo che il bond è "andato in cache miss").
+    - Tentativi 4-6: backoff più lungo (1.5s) — magari il chip sta ancora
+      processando la sessione precedente.
     """
     t_session_start = asyncio.get_running_loop().time()
     for attempt in range(1, CONNECT_MAX_ATTEMPTS + 1):
         client = BleakClient(device, timeout=CONNECT_TIMEOUT_S)
         t_start = asyncio.get_running_loop().time()
         try:
-            if attempt == 4:
+            if attempt == 3:
+                # Pre-pairing best-effort. La WanKa C1 non richiede pairing
+                # classico, ma Windows ne approfitta per cachare gli handle.
                 try:
                     await asyncio.wait_for(client.pair(), timeout=3.0)
                     log.info("pre-pair OK at attempt %d", attempt)
@@ -526,7 +814,7 @@ async def _try_connect(device: BLEDevice) -> Optional[BleakClient]:
                 await client.disconnect()
             except Exception:
                 pass
-            await asyncio.sleep(1.5 if attempt >= 4 else 0.3)
+            await asyncio.sleep(1.5 if attempt >= 3 else 0.3)
     session_dur = asyncio.get_running_loop().time() - t_session_start
     _metrics_record_session(success=False, attempts=CONNECT_MAX_ATTEMPTS,
                             duration_s=session_dur)
@@ -536,15 +824,20 @@ async def _try_connect(device: BLEDevice) -> Optional[BleakClient]:
 async def handle_device(device: BLEDevice) -> None:
     log.info("connecting to %s (name=%r), max %d attempts",
              device.address, device.name, CONNECT_MAX_ATTEMPTS)
+    set_phase("connecting")
     SESSION["binding_sent"] = False
     SESSION["profiles_sent"] = False
     SESSION["time_sent"] = False
+    SESSION["anonymous_resend_done"] = False
+    SESSION["last_ask_ts"] = 0
     SESSION["next_write_idx"] = 1
     SESSION["loop"] = asyncio.get_running_loop()
     client = await _try_connect(device)
     if client is None:
         log.error("all connect attempts failed, back to scan")
+        set_phase("scanning")
         return
+    set_phase("handshake")
     try:
         SESSION["client"] = client
         services = list(client.services)
@@ -583,10 +876,13 @@ async def handle_device(device: BLEDevice) -> None:
         except Exception as e:
             log.error("wake failed: %r", e)
 
-        log.info("listening, idle timeout 30s")
+        # Idle timeout: 90s. La BIA può tardare 10-20s dopo il primo weight
+        # frame; con timeout 30s spesso la perdiamo. 90s è abbondante e non
+        # dà fastidio (la bilancia si stacca da sola appena scendi).
+        log.info("listening, idle timeout 90s")
         idle_for = 0.0
         last_count = 0
-        while client.is_connected and idle_for < 30.0:
+        while client.is_connected and idle_for < 90.0:
             await asyncio.sleep(0.5)
             idle_for += 0.5
             if NOTIFY_COUNTER[0] != last_count:
@@ -595,7 +891,7 @@ async def handle_device(device: BLEDevice) -> None:
         if not client.is_connected:
             log.info("scale disconnected (powered off)")
         else:
-            log.info("idle 30s without data, releasing connection")
+            log.info("idle 90s without data, releasing connection")
     except Exception as exc:
         log.error("session error: %s: %r", type(exc).__name__, exc)
     finally:
@@ -607,15 +903,41 @@ async def handle_device(device: BLEDevice) -> None:
         SESSION["client"] = None
 
 
-# ---------------------------------------------------------------------------
-# Main loop
-# ---------------------------------------------------------------------------
+async def _mqtt_health_loop() -> None:
+    """Health-check periodico del client MQTT.
+
+    Sintomo riscontrato: dopo qualche minuto di idle, paho-mqtt smette di
+    mandare PINGREQ e il broker disconnette per timeout. Il publish
+    successivo trova `is_connected()=False` e ricrea il client (OK), ma
+    nel frattempo la SUBSCRIBE è morta — l'utente clicca Telegram, HA
+    pubblica l'answer, ma il listener non lo riceve.
+
+    Questo task gira ogni 30s, chiama `_get_mqtt()` (che ricrea il client
+    se non connesso, riapplicando la subscribe via on_connect) e tiene
+    il listener "raggiungibile" da HA in modo stabile.
+    """
+    from .ha_push import _get_mqtt
+    while True:
+        try:
+            client = _get_mqtt()
+            if not client.is_connected():
+                log.warning("MQTT health: client disconnected, will reconnect")
+        except Exception as e:
+            log.warning("MQTT health-check failed: %r", e)
+        await asyncio.sleep(30)
+
 
 async def main() -> None:
-    if not PROFILES:
-        log.error("no profiles configured. Edit config.yaml and add at "
-                  "least one profile under 'profiles:'.")
-        return
+    # Pre-warm MQTT prima di qualsiasi log.info, così quando attivo il MQTT
+    # log handler il broker è già connesso e nessun publish blocca su connect.
+    try:
+        from .ha_push import _get_mqtt
+        _get_mqtt()
+    except Exception as e:
+        log.warning("MQTT pre-warm failed: %r", e)
+    _enable_mqtt_log_handler()
+    # Avvia il task di health-check in background (non blocca main loop).
+    asyncio.create_task(_mqtt_health_loop())
     refresh_profiles_from_ha()
     log.info("starting permanent BLE scan (waiting for scale to power on)")
     last_seen: dict[str, float] = {}
@@ -632,6 +954,8 @@ async def main() -> None:
         last_seen[device.address] = loop_now
         log.info("scale advertising: %s name=%r rssi=%d",
                  device.address, device.name, adv.rssi)
+        _STATUS["scale_in_advertising"] = True
+        _STATUS["rssi"] = adv.rssi
         queue.put_nowait(device)
 
     scanner = BleakScanner(detection_callback=on_detection)
@@ -643,20 +967,6 @@ async def main() -> None:
             try:
                 await handle_device(device)
             finally:
-                # Auto-recovery: if too many sessions failed in a row the BT
-                # radio is stuck. Restart bthserv before resuming the scan.
-                if (CFG.enable_auto_recovery
-                        and _METRICS["consecutive_failed_sessions"]
-                        >= CFG.recovery_after_n_failed_sessions):
-                    log.warning(
-                        "%d consecutive failed sessions, triggering recovery",
-                        _METRICS["consecutive_failed_sessions"])
-                    await _restart_bthserv()
-                    try:
-                        await scanner.stop()
-                    except Exception:
-                        pass
-                    scanner = BleakScanner(detection_callback=on_detection)
                 await scanner.start()
                 log.info("resumed scan, waiting for next pesata")
     finally:
