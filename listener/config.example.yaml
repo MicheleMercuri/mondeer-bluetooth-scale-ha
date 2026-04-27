@@ -1,0 +1,79 @@
+# Configuration for the Mondeer/WanKa C1 BLE listener.
+# Copy this file to ``config.yaml`` (same directory as the Python sources),
+# then fill in your own values. Sensitive fields can also be supplied via
+# environment variables (BILANCIA_HA_TOKEN, BILANCIA_MQTT_PASS, ...) which
+# take precedence over the YAML.
+
+# -------------------------------------------------------------------------
+# Home Assistant REST API (optional)
+# -------------------------------------------------------------------------
+# Used only for the "monthly delta %" attribute (queries the history of the
+# weight sensor itself). Leave both empty if you do not need it.
+ha_base_url: "http://homeassistant.local:8123"
+ha_token: "PASTE_YOUR_LONG_LIVED_ACCESS_TOKEN_HERE"
+
+# -------------------------------------------------------------------------
+# MQTT broker (Mosquitto / EMQX / HiveMQ / HA Mosquitto add-on)
+# -------------------------------------------------------------------------
+mqtt_host: "homeassistant.local"
+mqtt_port: 1883
+mqtt_user: "homeassistant"
+mqtt_pass: "PASTE_YOUR_MQTT_PASSWORD_HERE"
+
+# -------------------------------------------------------------------------
+# Family settings
+# -------------------------------------------------------------------------
+# Numeric identifier sent to the scale during the binding handshake. Any
+# 32-bit integer; keep it stable across restarts (the scale stores it
+# internally and uses it to route weight records).
+family_id: 1
+
+# Local directory for last_pushed.json and metrics.json. Tilde expansion is
+# supported. On Windows you usually want %LOCALAPPDATA%/BilanciaMondeer.
+state_dir: "~/.local/state/bilancia-mondeer"
+
+# -------------------------------------------------------------------------
+# BLE auto-recovery (Windows only)
+# -------------------------------------------------------------------------
+# Some old BT chipsets get stuck after a few failed sessions. When enabled,
+# the listener triggers ``Restart-Service bthserv -Force`` after N
+# consecutive failed connect attempts. Requires the listener process to run
+# elevated (admin). Default: off.
+enable_auto_recovery: false
+recovery_after_n_failed_sessions: 3
+
+# -------------------------------------------------------------------------
+# Family profiles
+# -------------------------------------------------------------------------
+# These are sent to the scale on every connection. Profile #1 must be the
+# "admin" of the household (the scale uses it as the binding owner).
+#
+# weight_min / weight_max are used as a fallback to pick the right user when
+# the scale sends a "preliminary" record (sex=age=height=0). Make ranges
+# narrow but realistic so the listener can disambiguate (overlapping ranges
+# yield ``ambiguous weight match`` and the record is dropped).
+profiles:
+  - name: user1
+    user_id: 1
+    sex: 1            # 1 = male, 0 = female
+    age: 40
+    height_cm: 175
+    weight_min: 65
+    weight_max: 80
+    is_admin: true
+
+  - name: user2
+    user_id: 2
+    sex: 0
+    age: 38
+    height_cm: 165
+    weight_min: 50
+    weight_max: 60
+
+  - name: user3
+    user_id: 3
+    sex: 0
+    age: 14
+    height_cm: 155
+    weight_min: 40
+    weight_max: 55

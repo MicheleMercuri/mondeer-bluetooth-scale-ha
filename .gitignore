@@ -1,0 +1,45 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+build/
+dist/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtualenvs ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Listener runtime data (NEVER commit) ---
+listener/config.yaml
+config.yaml
+last_pushed.json
+metrics.json
+listener.log
+listener.log.*
+*.log
+
+# --- Secrets / credentials ---
+*.token
+.env
+.env.local
+
+# --- OS / archive ---
+*.zip
+*.tar.gz

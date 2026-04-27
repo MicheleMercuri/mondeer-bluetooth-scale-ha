@@ -1,0 +1,1306 @@
+title: Bilancia Famiglia
+theme: ios-dark-mode-blue-red
+views:
+- type: sections
+  max_columns: 3
+  title: Famiglia
+  path: bilancia-famiglia
+  icon: mdi:scale-bathroom
+  dense_section_placement: true
+  sections:
+  - type: grid
+    column_span: 4
+    cards:
+    - type: vertical-stack
+      cards:
+      - type: custom:mushroom-title-card
+        title: BIOMETRIA
+        subtitle: ''
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(135deg,\n    rgba(15, 15, 28, 0.97) 0%,\n    rgba(22, 30, 48, 0.95)\
+            \ 50%,\n    rgba(15, 22, 40, 0.97) 100%);\n  border: 1px solid rgba(100, 200, 255, 0.2);\n  border-radius: 24px;\n\
+            \  padding: 18px 24px 14px 24px;\n  position: relative;\n  overflow: hidden;\n}\nha-card .header,\nha-card .container\
+            \ {\n  padding: 0 !important;\n  margin: 0 !important;\n}\nha-card .title {\n  margin: 0 !important;\n  padding:\
+            \ 0 !important;\n  font-size: 28px !important;\n  font-weight: 700 !important;\n  line-height: 1.1 !important;\n\
+            \  display: inline-flex !important;\n  align-items: center !important;\n  gap: 10px !important;\n  width: max-content;\n\
+            \  background: linear-gradient(90deg, #00d4ff, #ff80ab, #b388ff, #00d4ff);\n  background-size: 300% auto;\n  background-position:\
+            \ 0% center;\n  -webkit-background-clip: text;\n  -webkit-text-fill-color: transparent;\n  animation: shine 4s\
+            \ linear infinite;\n  pointer-events: none;\n}\nha-card .title::before {\n  content: \"⚖️\";\n  font-size: 26px;\n\
+            \  line-height: 1;\n  -webkit-text-fill-color: initial;\n  background: none !important;\n  filter: drop-shadow(0\
+            \ 0 5px rgba(100, 200, 255, 0.55));\n}\nha-card .subtitle { display: none !important; }\nha-card::after {\n  content:\
+            \ \"\";\n  display: block;\n  width: 100%;\n  height: 4px;\n  margin-top: 12px;\n  border-radius: 999px;\n  background-image:\n\
+            \    linear-gradient(90deg, rgba(0,212,255,0.20), rgba(255,128,171,0.20), rgba(179,136,255,0.20)),\n    linear-gradient(90deg,\n\
+            \      transparent 0%,\n      rgba(0,212,255,0.00) 18%,\n      rgba(0,212,255,0.70) 35%,\n      rgba(255,128,171,0.85)\
+            \ 47%,\n      rgba(255,255,255,1.00) 50%,\n      rgba(179,136,255,0.85) 53%,\n      rgba(0,212,255,0.70) 65%,\n\
+            \      rgba(0,212,255,0.00) 82%,\n      transparent 100%),\n    radial-gradient(circle,\n      rgba(255,255,255,1.00)\
+            \ 0%,\n      rgba(255,255,255,0.55) 35%,\n      rgba(255,128,171,0.22) 58%,\n      transparent 75%);\n  background-size:\
+            \ 100% 100%, 200% 100%, 18px 18px;\n  background-repeat: no-repeat;\n  background-position: 0% 0, 110% 0, -12px\
+            \ 50%;\n  animation: sweep-main 2.2s ease-in-out infinite alternate;\n  will-change: background-position, opacity;\n\
+            \  box-shadow:\n    0 0 8px rgba(255,128,171,0.35),\n    0 0 16px rgba(0,212,255,0.22);\n  filter:\n    drop-shadow(0\
+            \ 0 6px rgba(255,255,255,0.18))\n    drop-shadow(0 0 10px rgba(179,136,255,0.14));\n  pointer-events: none;\n\
+            }\n@keyframes shine { to { background-position: 300% center; } }\n@keyframes sweep-main {\n  0%   { background-position:\
+            \ 0% 0, 110% 0, -12px 50%; opacity: 0.65; }\n  50%  { opacity: 1; }\n  100% { background-position: 0% 0, -10%\
+            \ 0, calc(100% + 12px) 50%; opacity: 0.65; }\n}\n"
+      grid_options:
+        columns: full
+      card_mod:
+        style: "ha-card {\n  background: transparent !important;\n  box-shadow: none !important;\n}\n"
+  - type: grid
+    column_span: 1
+    cards:
+    - type: vertical-stack
+      cards:
+      - type: custom:person-tracker-card
+        layout: compact
+        compact_width: 500
+        modern_width: 300
+        show_entity_picture: true
+        show_person_name: true
+        show_name: true
+        show_last_changed: true
+        show_battery: true
+        show_activity: false
+        show_distance: false
+        show_travel_time: false
+        show_connection: true
+        aspect_ratio: 1/0.7
+        triggers_update: all
+        battery_position: top-right
+        watch_battery_position: top-right-2
+        activity_position: bottom-left
+        distance_position: top-left
+        travel_position: top-left-2
+        connection_position: bottom-right
+        battery_font_size: 13px
+        watch_battery_font_size: 13px
+        activity_font_size: 13px
+        distance_font_size: 12px
+        travel_font_size: 12px
+        connection_font_size: 12px
+        modern_picture_size: 40
+        modern_name_font_size: 14px
+        modern_state_font_size: 12px
+        modern_show_battery_ring: true
+        modern_show_travel_ring: true
+        modern_travel_max_time: 60
+        smart_travel_mode: false
+        show_travel_time_2: true
+        show_distance_2: true
+        show_weather: true
+        weather_entity: weather.meteoradar_weather
+        show_weather_temperature: false
+        show_weather_background: true
+        entity: person.user1
+        show_watch_battery: true
+        connection_sensor: sensor.s24mm_wifi_connection
+        zone_2: zone.ite_v_de_fazio
+        travel_sensor_2: sensor.user1_to_home
+        watch_battery_sensor: sensor.galaxy_watch8_4wjb_battery_level
+        battery_state_sensor: sensor.galaxy_watch8_4wjb_battery_state
+        distance_sensor_2: sensor.user1_tracking_user1_distance
+        state:
+        - value: home
+          name: 🏡 Casa
+          styles:
+            name:
+              color: '#7DDA9F'
+          entity_picture: /local/profile_pic/mm_home.png
+        - value: not_home
+          name: 🚶‍♂️ Fuori Casa
+          styles:
+            name:
+              color: '#93ADCB'
+          entity_picture: /local/profile_pic/mm_not_home.png
+        - value: Lavoro
+          name: 🏢 Lavoro
+          styles:
+            name:
+              color: '#e1ff00'
+          entity_picture: /local/profile_pic/mm_at_work.png
+        - value: unknown
+          name: ❓ Sconosciuto
+          styles:
+            name:
+              color: '#808080'
+      - type: custom:mushroom-template-card
+        primary: '{{ states(''sensor.peso_user1'') }} kg'
+        secondary: '{% set d = states(''sensor.peso_user1_scostamento_mensile'') %} {% if d in [''unknown'',''unavailable'']
+          %} Ultima pesata: {{ as_timestamp(state_attr(''sensor.peso_user1'', ''measured_at'')) | timestamp_custom(''%d/%m
+          %H:%M'', true) }} {% else %}{% set v = d | float(0) %} {% if v > 0 %}▲ +{{ v }}% mese precedente {% elif v < 0 %}▼
+          {{ v }}% mese precedente {% else %}● invariato dal mese scorso{% endif %} {% endif %}'
+        icon: mdi:scale-bathroom
+        icon_color: cyan
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(0,212,255,0.18) 0%, rgba(0,80,120,0.10) 100%);\n \
+            \ border: 1px solid rgba(0,212,255,0.4);\n  border-radius: 20px;\n  --icon-size: 56px;\n}\n.primary {\n  font-size:\
+            \ 40px !important;\n  font-weight: 700 !important;\n  background: linear-gradient(180deg, #00d4ff, #00ff88);\n\
+            \  -webkit-background-clip: text;\n  -webkit-text-fill-color: transparent;\n}\n.secondary { font-size: 13px !important;\
+            \ opacity: 0.85; }\n"
+      - type: custom:apexcharts-card
+        graph_span: 365d
+        span:
+          end: day
+        header:
+          show: true
+          title: Peso (12 mesi)
+          show_states: false
+        apex_config:
+          chart:
+            height: 200
+          stroke:
+            curve: smooth
+            width: 3
+          grid:
+            borderColor: rgba(255,255,255,0.08)
+        series:
+        - entity: sensor.peso_user1
+          name: Peso
+          color: '#00d4ff'
+          type: area
+          opacity: 0.25
+          statistics:
+            type: mean
+            period: day
+        card_mod:
+          style: "ha-card {\n  background: rgba(0,0,0,0.2);\n  border: 1px solid rgba(0,212,255,0.20);\n  border-radius: 16px;\n\
+            }\n"
+      - type: custom:mushroom-template-card
+        primary: '{{ states(''sensor.peso_user1_bmi'') }}'
+        secondary: IMC · {% set s = states('sensor.peso_user1_bmi_stato') %} {% if s == 'ottimale' %}Normopeso {% elif s
+          == 'sotto' %}Sottopeso {% elif s == 'sopra' %}{% set b = states('sensor.peso_user1_bmi') | float(0) %}{% if b
+          >= 30 %}Obesità{% else %}Sovrappeso{% endif %} {% else %}—{% endif %} · 18.5–24.9
+        icon: mdi:human-male-height-variant
+        icon_color: '{% set s = states(''sensor.peso_user1_bmi_stato'') %} {% if s == ''ottimale'' %}green{% elif s == ''sotto''
+          %}blue{% elif s == ''sopra'' %}red{% else %}grey{% endif %}'
+        card_mod:
+          style: "ha-card {\n  {% set s = states('sensor.peso_user1_bmi_stato') %}\n  {% if s == 'ottimale' %}--c: 76,175,80;\n\
+            \  {% elif s == 'sotto' %}--c: 33,150,243;\n  {% elif s == 'sopra' %}--c: 244,67,54;\n  {% else %}--c: 100,100,100;{%\
+            \ endif %}\n  background: linear-gradient(145deg, rgba(var(--c),0.18), rgba(var(--c),0.05));\n  border: 1px solid\
+            \ rgba(var(--c),0.4);\n  border-radius: 16px;\n}\n.primary { font-size: 28px !important; font-weight: 700 !important;\
+            \ }\n.secondary { font-size: 12px !important; opacity: 0.85; }\n"
+      - type: custom:apexcharts-card
+        graph_span: 365d
+        span:
+          end: day
+        header:
+          show: true
+          title: IMC (12 mesi)
+          show_states: false
+        apex_config:
+          chart:
+            height: 180
+          stroke:
+            curve: smooth
+            width: 3
+          grid:
+            borderColor: rgba(255,255,255,0.08)
+          annotations:
+            yaxis:
+            - y: 18.5
+              y2: 24.9
+              fillColor: '#4caf50'
+              opacity: 0.1
+            - y: 18.5
+              borderColor: '#4caf50'
+              strokeDashArray: 4
+            - y: 24.9
+              borderColor: '#4caf50'
+              strokeDashArray: 4
+          yaxis:
+            min: 15
+            max: 30
+        series:
+        - entity: sensor.peso_user1_bmi
+          name: IMC
+          color: '#00ff88'
+          statistics:
+            type: mean
+            period: day
+        card_mod:
+          style: "ha-card {\n  background: rgba(0,0,0,0.2);\n  border: 1px solid rgba(0,255,136,0.20);\n  border-radius: 16px;\n\
+            }\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user1_grasso
+          min: 0
+          max: 50
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 0
+            color: '#2196f3'
+          - from: 14
+            color: '#4caf50'
+          - from: 24
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user1_grasso") | float(0) | round(1) }}'
+              unit_of_measurement: '%'
+              color: '{% set v = states("sensor.peso_user1_grasso") | float(0) %}{% if v < 14 %}#2196f3{% elif v <= 24 %}#4caf50{%
+                else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Massa grassa
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 14-24%
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user1_grasso_stato\") %}\n  {% if s == \"ottimale\" %}--c:\
+              \ 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border: 1.5px solid\
+              \ rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n  --main-needle-stroke-width:\
+              \ 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user1_acqua
+          min: 30
+          max: 80
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 30
+            color: '#2196f3'
+          - from: 50
+            color: '#4caf50'
+          - from: 65
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user1_acqua") | float(0) | round(1) }}'
+              unit_of_measurement: '%'
+              color: '{% set v = states("sensor.peso_user1_acqua") | float(0) %}{% if v < 50 %}#2196f3{% elif v <= 65 %}#4caf50{%
+                else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Acqua corporea
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 50-65%
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user1_acqua_stato\") %}\n  {% if s == \"ottimale\" %}--c:\
+              \ 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border: 1.5px solid\
+              \ rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n  --main-needle-stroke-width:\
+              \ 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user1_ossa
+          min: 1
+          max: 5
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 1
+            color: '#2196f3'
+          - from: 2.9
+            color: '#4caf50'
+          - from: 3.6
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user1_ossa") | float(0) | round(1) }}'
+              unit_of_measurement: kg
+              color: '{% set v = states("sensor.peso_user1_ossa") | float(0) %}{% if v < 2.9 %}#2196f3{% elif v <= 3.6 %}#4caf50{%
+                else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Massa ossea
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 2.9-3.6kg
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user1_ossa_stato\") %}\n  {% if s == \"ottimale\" %}--c:\
+              \ 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border: 1.5px solid\
+              \ rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n  --main-needle-stroke-width:\
+              \ 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user1_muscoli
+          min: 10
+          max: 50
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 10
+            color: '#2196f3'
+          - from: 20
+            color: '#4caf50'
+          - from: 30
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user1_muscoli") | float(0) | round(1) }}'
+              unit_of_measurement: kg
+              color: '{% set v = states("sensor.peso_user1_muscoli") | float(0) %}{% if v < 20 %}#2196f3{% elif v <= 30
+                %}#4caf50{% else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Massa muscolare
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 20-30kg
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user1_muscoli_stato\") %}\n  {% if s == \"ottimale\" %}--c:\
+              \ 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border: 1.5px solid\
+              \ rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n  --main-needle-stroke-width:\
+              \ 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:mushroom-template-card
+          primary: '{{ states(''sensor.peso_user1_viscerale'') }}'
+          secondary: Grasso viscerale · max 12
+          icon: mdi:stomach
+          icon_color: '{% set s = states(''sensor.peso_user1_viscerale_stato'') %} {% if s == ''ottimale'' %}green{% elif
+            s == ''sotto'' %}blue{% else %}red{% endif %}'
+          card_mod:
+            style: "ha-card {\n  {% set s = states('sensor.peso_user1_viscerale_stato') %}\n  {% if s == 'ottimale' %}--c:\
+              \ 76,175,80;\n  {% elif s == 'sotto' %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(145deg, rgba(var(--c),0.15), rgba(var(--c),0.04));\n  border: 1px solid rgba(var(--c),0.4);\n\
+              \  border-radius: 14px;\n}\n.primary { font-size: 22px !important; font-weight: 700 !important; }\n.secondary\
+              \ { font-size: 11px !important; opacity: 0.8; }\n"
+        - type: custom:mushroom-template-card
+          primary: '{{ states(''sensor.peso_user1_calorie_bmr'') }} kcal'
+          secondary: Metabolismo basale
+          icon: mdi:fire
+          icon_color: orange
+          card_mod:
+            style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,152,0,0.15), rgba(255,152,0,0.04));\n  border:\
+              \ 1px solid rgba(255,152,0,0.4);\n  border-radius: 14px;\n}\n.primary { font-size: 20px !important; font-weight:\
+              \ 700 !important; color: #ffb74d !important; }\n.secondary { font-size: 11px !important; opacity: 0.8; }\n"
+      card_mod:
+        style: "ha-card {\n  background: linear-gradient(160deg, rgba(0,212,255,0.10) 0%, rgba(20,30,50,0.95) 100%);\n  border:\
+          \ 1px solid rgba(0,212,255,0.3);\n  border-radius: 24px;\n  padding: 16px;\n  backdrop-filter: blur(10px);\n}\n"
+  - type: grid
+    column_span: 1
+    cards:
+    - type: vertical-stack
+      cards:
+      - type: custom:person-tracker-card
+        layout: compact
+        compact_width: 500
+        modern_width: 300
+        show_entity_picture: true
+        show_person_name: true
+        show_name: true
+        show_last_changed: true
+        show_battery: true
+        show_activity: false
+        show_distance: false
+        show_travel_time: false
+        show_connection: true
+        aspect_ratio: 1/0.7
+        triggers_update: all
+        battery_position: top-right
+        watch_battery_position: top-right-2
+        activity_position: bottom-left
+        distance_position: top-left
+        travel_position: top-left-2
+        connection_position: bottom-right
+        battery_font_size: 13px
+        watch_battery_font_size: 13px
+        activity_font_size: 13px
+        distance_font_size: 12px
+        travel_font_size: 12px
+        connection_font_size: 12px
+        modern_picture_size: 40
+        modern_name_font_size: 14px
+        modern_state_font_size: 12px
+        modern_show_battery_ring: true
+        modern_show_travel_ring: true
+        modern_travel_max_time: 60
+        smart_travel_mode: false
+        show_travel_time_2: true
+        show_distance_2: true
+        show_weather: true
+        weather_entity: weather.meteoradar_weather
+        show_weather_temperature: false
+        show_weather_background: true
+        entity: person.user2
+        show_watch_battery: false
+        battery_sensor: sensor.sm_a336b_battery_level
+        battery_state_sensor: sensor.sm_a336b_battery_state
+        connection_sensor: sensor.sm_a336b_wi_fi_connection
+        zone_2: zone.ite_v_de_fazio
+        travel_sensor_2: sensor.user2_to_home
+        distance_sensor_2: sensor.proximity_user2_distance
+        state:
+        - value: home
+          name: 🏡 Casa
+          styles:
+            name:
+              color: '#7DDA9F'
+          entity_picture: /local/profile_pic/ml_home.png
+        - value: not_home
+          name: 🚶‍♂️ Fuori Casa
+          styles:
+            name:
+              color: '#93ADCB'
+          entity_picture: /local/profile_pic/ml_not_home.png
+        - value: Lavoro
+          name: 🏢 Lavoro
+          styles:
+            name:
+              color: '#e1ff00'
+          entity_picture: /local/profile_pic/ml_school.png
+        - value: unknown
+          name: ❓ Sconosciuto
+          styles:
+            name:
+              color: '#808080'
+      - type: custom:mushroom-template-card
+        primary: '{{ states(''sensor.peso_user2'') }} kg'
+        secondary: '{% set d = states(''sensor.peso_user2_scostamento_mensile'') %} {% if d in [''unknown'',''unavailable'']
+          %} Ultima pesata: {{ as_timestamp(state_attr(''sensor.peso_user2'', ''measured_at'')) | timestamp_custom(''%d/%m
+          %H:%M'', true) }} {% else %}{% set v = d | float(0) %} {% if v > 0 %}▲ +{{ v }}% mese precedente {% elif v < 0 %}▼
+          {{ v }}% mese precedente {% else %}● invariato dal mese scorso{% endif %} {% endif %}'
+        icon: mdi:scale-bathroom
+        icon_color: pink
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,64,129,0.18), rgba(120,30,80,0.10));\n  border:\
+            \ 1px solid rgba(255,64,129,0.4);\n  border-radius: 20px;\n  --icon-size: 56px;\n}\n.primary {\n  font-size: 40px\
+            \ !important;\n  font-weight: 700 !important;\n  background: linear-gradient(180deg, #ff4081, #ff80ab);\n  -webkit-background-clip:\
+            \ text;\n  -webkit-text-fill-color: transparent;\n}\n.secondary { font-size: 13px !important; opacity: 0.85; }\n"
+      - type: custom:apexcharts-card
+        graph_span: 365d
+        span:
+          end: day
+        header:
+          show: true
+          title: Peso (12 mesi)
+          show_states: false
+        apex_config:
+          chart:
+            height: 200
+          stroke:
+            curve: smooth
+            width: 3
+          grid:
+            borderColor: rgba(255,255,255,0.08)
+        series:
+        - entity: sensor.peso_user2
+          name: Peso
+          color: '#ff4081'
+          type: area
+          opacity: 0.25
+          statistics:
+            type: mean
+            period: day
+        card_mod:
+          style: "ha-card {\n  background: rgba(0,0,0,0.2);\n  border: 1px solid rgba(255,64,129,0.20);\n  border-radius:\
+            \ 16px;\n}\n"
+      - type: custom:mushroom-template-card
+        primary: '{{ states(''sensor.peso_user2_bmi'') }}'
+        secondary: IMC · {% set s = states('sensor.peso_user2_bmi_stato') %} {% if s == 'ottimale' %}Normopeso {% elif
+          s == 'sotto' %}Sottopeso {% elif s == 'sopra' %}{% set b = states('sensor.peso_user2_bmi') | float(0) %}{%
+          if b >= 30 %}Obesità{% else %}Sovrappeso{% endif %} {% else %}—{% endif %} · 18.5–24.9
+        icon: mdi:human-female
+        icon_color: '{% set s = states(''sensor.peso_user2_bmi_stato'') %} {% if s == ''ottimale'' %}green{% elif s
+          == ''sotto'' %}blue{% elif s == ''sopra'' %}red{% else %}grey{% endif %}'
+        card_mod:
+          style: "ha-card {\n  {% set s = states('sensor.peso_user2_bmi_stato') %}\n  {% if s == 'ottimale' %}--c: 76,175,80;\n\
+            \  {% elif s == 'sotto' %}--c: 33,150,243;\n  {% elif s == 'sopra' %}--c: 244,67,54;\n  {% else %}--c: 100,100,100;{%\
+            \ endif %}\n  background: linear-gradient(145deg, rgba(var(--c),0.18), rgba(var(--c),0.05));\n  border: 1px solid\
+            \ rgba(var(--c),0.4);\n  border-radius: 16px;\n}\n.primary { font-size: 28px !important; font-weight: 700 !important;\
+            \ }\n.secondary { font-size: 12px !important; opacity: 0.85; }\n"
+      - type: custom:apexcharts-card
+        graph_span: 365d
+        span:
+          end: day
+        header:
+          show: true
+          title: IMC (12 mesi)
+          show_states: false
+        apex_config:
+          chart:
+            height: 180
+          stroke:
+            curve: smooth
+            width: 3
+          grid:
+            borderColor: rgba(255,255,255,0.08)
+          annotations:
+            yaxis:
+            - y: 18.5
+              y2: 24.9
+              fillColor: '#4caf50'
+              opacity: 0.1
+            - y: 18.5
+              borderColor: '#4caf50'
+              strokeDashArray: 4
+            - y: 24.9
+              borderColor: '#4caf50'
+              strokeDashArray: 4
+          yaxis:
+            min: 15
+            max: 30
+        series:
+        - entity: sensor.peso_user2_bmi
+          name: IMC
+          color: '#ff80ab'
+          statistics:
+            type: mean
+            period: day
+        card_mod:
+          style: "ha-card {\n  background: rgba(0,0,0,0.2);\n  border: 1px solid rgba(255,128,171,0.20);\n  border-radius:\
+            \ 16px;\n}\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user2_grasso
+          min: 0
+          max: 50
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 0
+            color: '#2196f3'
+          - from: 24
+            color: '#4caf50'
+          - from: 34
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user2_grasso") | float(0) | round(1) }}'
+              unit_of_measurement: '%'
+              color: '{% set v = states("sensor.peso_user2_grasso") | float(0) %}{% if v < 24 %}#2196f3{% elif v <=
+                34 %}#4caf50{% else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Massa grassa
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 24-34%
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user2_grasso_stato\") %}\n  {% if s == \"ottimale\"\
+              \ %}--c: 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n \
+              \ background: linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border:\
+              \ 1.5px solid rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n \
+              \ --main-needle-stroke-width: 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user2_acqua
+          min: 30
+          max: 80
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 30
+            color: '#2196f3'
+          - from: 45
+            color: '#4caf50'
+          - from: 60
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user2_acqua") | float(0) | round(1) }}'
+              unit_of_measurement: '%'
+              color: '{% set v = states("sensor.peso_user2_acqua") | float(0) %}{% if v < 45 %}#2196f3{% elif v <= 60
+                %}#4caf50{% else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Acqua corporea
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 45-60%
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user2_acqua_stato\") %}\n  {% if s == \"ottimale\"\
+              \ %}--c: 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n \
+              \ background: linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border:\
+              \ 1.5px solid rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n \
+              \ --main-needle-stroke-width: 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user2_ossa
+          min: 1
+          max: 5
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 1
+            color: '#2196f3'
+          - from: 2.2
+            color: '#4caf50'
+          - from: 2.8
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user2_ossa") | float(0) | round(1) }}'
+              unit_of_measurement: kg
+              color: '{% set v = states("sensor.peso_user2_ossa") | float(0) %}{% if v < 2.2 %}#2196f3{% elif v <= 2.8
+                %}#4caf50{% else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Massa ossea
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 2.2-2.8kg
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user2_ossa_stato\") %}\n  {% if s == \"ottimale\" %}--c:\
+              \ 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border: 1.5px solid\
+              \ rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n  --main-needle-stroke-width:\
+              \ 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user2_muscoli
+          min: 10
+          max: 50
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 10
+            color: '#2196f3'
+          - from: 16
+            color: '#4caf50'
+          - from: 22
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user2_muscoli") | float(0) | round(1) }}'
+              unit_of_measurement: kg
+              color: '{% set v = states("sensor.peso_user2_muscoli") | float(0) %}{% if v < 16 %}#2196f3{% elif v <=
+                22 %}#4caf50{% else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Massa muscolare
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 16-22kg
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user2_muscoli_stato\") %}\n  {% if s == \"ottimale\"\
+              \ %}--c: 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n \
+              \ background: linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border:\
+              \ 1.5px solid rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n \
+              \ --main-needle-stroke-width: 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:mushroom-template-card
+          primary: '{{ states(''sensor.peso_user2_viscerale'') }}'
+          secondary: Grasso viscerale · max 9
+          icon: mdi:stomach
+          icon_color: '{% set s = states(''sensor.peso_user2_viscerale_stato'') %} {% if s == ''ottimale'' %}green{%
+            elif s == ''sotto'' %}blue{% else %}red{% endif %}'
+          card_mod:
+            style: "ha-card {\n  {% set s = states('sensor.peso_user2_viscerale_stato') %}\n  {% if s == 'ottimale'\
+              \ %}--c: 76,175,80;\n  {% elif s == 'sotto' %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(145deg, rgba(var(--c),0.15), rgba(var(--c),0.04));\n  border: 1px solid rgba(var(--c),0.4);\n\
+              \  border-radius: 14px;\n}\n.primary { font-size: 22px !important; font-weight: 700 !important; }\n.secondary\
+              \ { font-size: 11px !important; opacity: 0.8; }\n"
+        - type: custom:mushroom-template-card
+          primary: '{{ states(''sensor.peso_user2_calorie_bmr'') }} kcal'
+          secondary: Metabolismo basale
+          icon: mdi:fire
+          icon_color: orange
+          card_mod:
+            style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,152,0,0.15), rgba(255,152,0,0.04));\n  border:\
+              \ 1px solid rgba(255,152,0,0.4);\n  border-radius: 14px;\n}\n.primary { font-size: 20px !important; font-weight:\
+              \ 700 !important; color: #ffb74d !important; }\n.secondary { font-size: 11px !important; opacity: 0.8; }\n"
+      card_mod:
+        style: "ha-card {\n  background: linear-gradient(160deg, rgba(255,64,129,0.10) 0%, rgba(50,15,30,0.95) 100%);\n  border:\
+          \ 1px solid rgba(255,64,129,0.3);\n  border-radius: 24px;\n  padding: 16px;\n  backdrop-filter: blur(10px);\n}\n"
+  - type: grid
+    column_span: 1
+    cards:
+    - type: vertical-stack
+      cards:
+      - type: custom:person-tracker-card
+        layout: compact
+        compact_width: 500
+        modern_width: 300
+        show_entity_picture: true
+        show_person_name: true
+        show_name: true
+        show_last_changed: true
+        show_battery: true
+        show_activity: false
+        show_distance: false
+        show_travel_time: false
+        show_connection: true
+        aspect_ratio: 1/0.7
+        triggers_update: all
+        battery_position: top-right
+        watch_battery_position: top-right-2
+        activity_position: bottom-left
+        distance_position: top-left
+        travel_position: top-left-2
+        connection_position: bottom-right
+        battery_font_size: 13px
+        watch_battery_font_size: 13px
+        activity_font_size: 13px
+        distance_font_size: 12px
+        travel_font_size: 12px
+        connection_font_size: 12px
+        modern_picture_size: 40
+        modern_name_font_size: 14px
+        modern_state_font_size: 12px
+        modern_show_battery_ring: true
+        modern_show_travel_ring: true
+        modern_travel_max_time: 60
+        smart_travel_mode: false
+        show_travel_time_2: true
+        show_distance_2: true
+        show_weather: true
+        weather_entity: weather.meteoradar_weather
+        show_weather_temperature: false
+        show_weather_background: true
+        entity: person.user3
+        show_watch_battery: false
+        battery_sensor: sensor.iphone_battery_level
+        battery_state_sensor: sensor.iphone_battery_state
+        activity_sensor: sensor.iphone_activity
+        connection_sensor: sensor.iphone_ssid
+        zone_2: zone.liceo_s_g_galilei
+        distance_sensor_2: sensor.proximity_user3_distance
+        travel_sensor_2: sensor.user3_to_home
+        state:
+        - value: home
+          name: 🏡 Casa
+          styles:
+            name:
+              color: '#7DDA9F'
+          entity_picture: /local/profile_pic/maty_at_home_2.png
+        - value: not_home
+          name: 🚶‍♂️ Fuori Casa
+          styles:
+            name:
+              color: '#93ADCB'
+          entity_picture: /local/profile_pic/maty_not_home.png
+        - value: Scuola
+          name: 🏢 Scuola
+          styles:
+            name:
+              color: '#e1ff00'
+          entity_picture: /local/profile_pic/maty_at_school.png
+        - value: unknown
+          name: ❓ Sconosciuto
+          styles:
+            name:
+              color: '#808080'
+      - type: custom:mushroom-template-card
+        primary: '{{ states(''sensor.peso_user3'') }} kg'
+        secondary: '{% set d = states(''sensor.peso_user3_scostamento_mensile'') %} {% if d in [''unknown'',''unavailable'']
+          %} Ultima pesata: {{ as_timestamp(state_attr(''sensor.peso_user3'', ''measured_at'')) | timestamp_custom(''%d/%m
+          %H:%M'', true) }} {% else %}{% set v = d | float(0) %} {% if v > 0 %}▲ +{{ v }}% mese precedente {% elif v < 0 %}▼
+          {{ v }}% mese precedente {% else %}● invariato dal mese scorso{% endif %} {% endif %}'
+        icon: mdi:scale-bathroom
+        icon_color: purple
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(179,136,255,0.18), rgba(80,40,120,0.10));\n  border:\
+            \ 1px solid rgba(179,136,255,0.4);\n  border-radius: 20px;\n  --icon-size: 56px;\n}\n.primary {\n  font-size:\
+            \ 40px !important;\n  font-weight: 700 !important;\n  background: linear-gradient(180deg, #b388ff, #e1bee7);\n\
+            \  -webkit-background-clip: text;\n  -webkit-text-fill-color: transparent;\n}\n.secondary { font-size: 13px !important;\
+            \ opacity: 0.85; }\n"
+      - type: custom:apexcharts-card
+        graph_span: 365d
+        span:
+          end: day
+        header:
+          show: true
+          title: Peso (12 mesi)
+          show_states: false
+        apex_config:
+          chart:
+            height: 200
+          stroke:
+            curve: smooth
+            width: 3
+          grid:
+            borderColor: rgba(255,255,255,0.08)
+        series:
+        - entity: sensor.peso_user3
+          name: Peso
+          color: '#b388ff'
+          type: area
+          opacity: 0.25
+          statistics:
+            type: mean
+            period: day
+        card_mod:
+          style: "ha-card {\n  background: rgba(0,0,0,0.2);\n  border: 1px solid rgba(179,136,255,0.20);\n  border-radius:\
+            \ 16px;\n}\n"
+      - type: custom:mushroom-template-card
+        primary: '{{ states(''sensor.peso_user3_bmi'') }}'
+        secondary: IMC · {% set s = states('sensor.peso_user3_bmi_stato') %} {% if s == 'ottimale' %}Normopeso {% elif s
+          == 'sotto' %}Sottopeso {% elif s == 'sopra' %}Sopra range {% else %}—{% endif %} · 16.5–23 (età)
+        icon: mdi:human-female-girl
+        icon_color: '{% set s = states(''sensor.peso_user3_bmi_stato'') %} {% if s == ''ottimale'' %}green{% elif s == ''sotto''
+          %}blue{% elif s == ''sopra'' %}red{% else %}grey{% endif %}'
+        card_mod:
+          style: "ha-card {\n  {% set s = states('sensor.peso_user3_bmi_stato') %}\n  {% if s == 'ottimale' %}--c: 76,175,80;\n\
+            \  {% elif s == 'sotto' %}--c: 33,150,243;\n  {% elif s == 'sopra' %}--c: 244,67,54;\n  {% else %}--c: 100,100,100;{%\
+            \ endif %}\n  background: linear-gradient(145deg, rgba(var(--c),0.18), rgba(var(--c),0.05));\n  border: 1px solid\
+            \ rgba(var(--c),0.4);\n  border-radius: 16px;\n}\n.primary { font-size: 28px !important; font-weight: 700 !important;\
+            \ }\n.secondary { font-size: 12px !important; opacity: 0.85; }\n"
+      - type: custom:apexcharts-card
+        graph_span: 365d
+        span:
+          end: day
+        header:
+          show: true
+          title: IMC (12 mesi)
+          show_states: false
+        apex_config:
+          chart:
+            height: 180
+          stroke:
+            curve: smooth
+            width: 3
+          grid:
+            borderColor: rgba(255,255,255,0.08)
+          annotations:
+            yaxis:
+            - y: 16.5
+              y2: 23
+              fillColor: '#4caf50'
+              opacity: 0.1
+            - y: 16.5
+              borderColor: '#4caf50'
+              strokeDashArray: 4
+            - y: 23
+              borderColor: '#4caf50'
+              strokeDashArray: 4
+          yaxis:
+            min: 13
+            max: 28
+        series:
+        - entity: sensor.peso_user3_bmi
+          name: IMC
+          color: '#e1bee7'
+          statistics:
+            type: mean
+            period: day
+        card_mod:
+          style: "ha-card {\n  background: rgba(0,0,0,0.2);\n  border: 1px solid rgba(225,190,231,0.20);\n  border-radius:\
+            \ 16px;\n}\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user3_grasso
+          min: 0
+          max: 50
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 0
+            color: '#2196f3'
+          - from: 17
+            color: '#4caf50'
+          - from: 28
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user3_grasso") | float(0) | round(1) }}'
+              unit_of_measurement: '%'
+              color: '{% set v = states("sensor.peso_user3_grasso") | float(0) %}{% if v < 17 %}#2196f3{% elif v <= 28 %}#4caf50{%
+                else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Massa grassa
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 17-28%
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user3_grasso_stato\") %}\n  {% if s == \"ottimale\" %}--c:\
+              \ 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border: 1.5px solid\
+              \ rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n  --main-needle-stroke-width:\
+              \ 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user3_acqua
+          min: 30
+          max: 80
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 30
+            color: '#2196f3'
+          - from: 55
+            color: '#4caf50'
+          - from: 65
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user3_acqua") | float(0) | round(1) }}'
+              unit_of_measurement: '%'
+              color: '{% set v = states("sensor.peso_user3_acqua") | float(0) %}{% if v < 55 %}#2196f3{% elif v <= 65 %}#4caf50{%
+                else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Acqua corporea
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 55-65%
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user3_acqua_stato\") %}\n  {% if s == \"ottimale\" %}--c:\
+              \ 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border: 1.5px solid\
+              \ rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n  --main-needle-stroke-width:\
+              \ 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user3_ossa
+          min: 1
+          max: 5
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 1
+            color: '#2196f3'
+          - from: 2.0
+            color: '#4caf50'
+          - from: 2.6
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user3_ossa") | float(0) | round(1) }}'
+              unit_of_measurement: kg
+              color: '{% set v = states("sensor.peso_user3_ossa") | float(0) %}{% if v < 2.0 %}#2196f3{% elif v <= 2.6 %}#4caf50{%
+                else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Massa ossea
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 2.0-2.6kg
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user3_ossa_stato\") %}\n  {% if s == \"ottimale\" %}--c:\
+              \ 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border: 1.5px solid\
+              \ rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n  --main-needle-stroke-width:\
+              \ 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+        - type: custom:gauge-card-pro
+          entity: sensor.peso_user3_muscoli
+          min: 10
+          max: 50
+          needle: true
+          needle_color: '#ffffff'
+          gradient: true
+          gradient_resolution: 100
+          round: small
+          segments:
+          - from: 10
+            color: '#2196f3'
+          - from: 15
+            color: '#4caf50'
+          - from: 20
+            color: '#f44336'
+          value_texts:
+            primary:
+              value: '{{ states("sensor.peso_user3_muscoli") | float(0) | round(1) }}'
+              unit_of_measurement: kg
+              color: '{% set v = states("sensor.peso_user3_muscoli") | float(0) %}{% if v < 15 %}#2196f3{% elif v <= 20
+                %}#4caf50{% else %}#f44336{% endif %}'
+          titles:
+            primary:
+              value: Massa muscolare
+              color: rgba(255,255,255,0.85)
+              font_size: 13px
+            secondary:
+              value: range 15-20kg
+              color: rgba(76,175,80,0.85)
+              font_size: 11px
+          hide_background: true
+          card_mod:
+            style: "ha-card {\n  {% set s = states(\"sensor.peso_user3_muscoli_stato\") %}\n  {% if s == \"ottimale\" %}--c:\
+              \ 76,175,80;\n  {% elif s == \"sotto\" %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(180deg, rgba(var(--c),0.18) 0%, rgba(var(--c),0.04) 100%) !important;\n  border: 1.5px solid\
+              \ rgba(var(--c),0.5) !important;\n  border-radius: 16px !important;\n  padding: 8px;\n}\n* {\n  --main-needle-stroke-width:\
+              \ 1.5px;\n  --main-needle-stroke-color: rgba(255,255,255,0.6);\n}\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:mushroom-template-card
+          primary: '{{ states(''sensor.peso_user3_viscerale'') }}'
+          secondary: Grasso viscerale · max 4
+          icon: mdi:stomach
+          icon_color: '{% set s = states(''sensor.peso_user3_viscerale_stato'') %} {% if s == ''ottimale'' %}green{% elif
+            s == ''sotto'' %}blue{% else %}red{% endif %}'
+          card_mod:
+            style: "ha-card {\n  {% set s = states('sensor.peso_user3_viscerale_stato') %}\n  {% if s == 'ottimale' %}--c:\
+              \ 76,175,80;\n  {% elif s == 'sotto' %}--c: 33,150,243;\n  {% else %}--c: 244,67,54;{% endif %}\n  background:\
+              \ linear-gradient(145deg, rgba(var(--c),0.15), rgba(var(--c),0.04));\n  border: 1px solid rgba(var(--c),0.4);\n\
+              \  border-radius: 14px;\n}\n.primary { font-size: 22px !important; font-weight: 700 !important; }\n.secondary\
+              \ { font-size: 11px !important; opacity: 0.8; }\n"
+        - type: custom:mushroom-template-card
+          primary: '{{ states(''sensor.peso_user3_calorie_bmr'') }} kcal'
+          secondary: Metabolismo basale
+          icon: mdi:fire
+          icon_color: orange
+          card_mod:
+            style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,152,0,0.15), rgba(255,152,0,0.04));\n  border:\
+              \ 1px solid rgba(255,152,0,0.4);\n  border-radius: 14px;\n}\n.primary { font-size: 20px !important; font-weight:\
+              \ 700 !important; color: #ffb74d !important; }\n.secondary { font-size: 11px !important; opacity: 0.8; }\n"
+      card_mod:
+        style: "ha-card {\n  background: linear-gradient(160deg, rgba(179,136,255,0.10) 0%, rgba(40,20,60,0.95) 100%);\n \
+          \ border: 1px solid rgba(179,136,255,0.3);\n  border-radius: 24px;\n  padding: 16px;\n  backdrop-filter: blur(10px);\n\
+          }\n"
+  - type: grid
+    column_span: 1
+    cards:
+    - type: vertical-stack
+      cards:
+      - type: custom:mushroom-title-card
+        title: PROFILO USER1
+        subtitle: ''
+        card_mod:
+          style: "ha-card { padding: 8px 14px 6px 14px; }\nha-card .title {\n  margin: 0 !important;\n  font-size: 16px !important;\n\
+            \  font-weight: 700 !important;\n  display: inline-flex; align-items: center; gap: 8px;\n  background: linear-gradient(90deg,\
+            \ rgba(0,212,255,1), rgba(0,212,255,0.6));\n  -webkit-background-clip: text;\n  -webkit-text-fill-color: transparent;\n\
+            }\nha-card .title::before {\n  content: \"\U0001F468\";\n  -webkit-text-fill-color: initial;\n  background: none\
+            \ !important;\n}\nha-card .subtitle { display: none !important; }\n"
+      - type: custom:mushroom-select-card
+        entity: input_select.bilancia_user1_sesso
+        name: Sesso
+        icon: mdi:gender-male-female
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+            \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+            \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      - type: custom:mushroom-number-card
+        entity: input_number.bilancia_user1_eta
+        name: Età
+        icon: mdi:cake-variant
+        display_mode: buttons
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+            \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+            \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      - type: custom:mushroom-number-card
+        entity: input_number.bilancia_user1_altezza
+        name: Altezza
+        icon: mdi:human-male-height
+        display_mode: buttons
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+            \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+            \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:mushroom-number-card
+          entity: input_number.bilancia_user1_peso_min
+          name: Peso min
+          icon: mdi:arrow-down-bold
+          display_mode: buttons
+          card_mod:
+            style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+              \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+              \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+        - type: custom:mushroom-number-card
+          entity: input_number.bilancia_user1_peso_max
+          name: Peso max
+          icon: mdi:arrow-up-bold
+          display_mode: buttons
+          card_mod:
+            style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+              \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+              \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      card_mod:
+        style: "ha-card {\n  background: linear-gradient(160deg, rgba(0,212,255,0.10) 0%, rgba(20,30,50,0.95) 100%);\n  border:\
+          \ 1px solid rgba(0,212,255,0.3);\n  border-radius: 24px;\n  padding: 12px;\n  backdrop-filter: blur(10px);\n}\n"
+  - type: grid
+    column_span: 1
+    cards:
+    - type: vertical-stack
+      cards:
+      - type: custom:mushroom-title-card
+        title: PROFILO USER2
+        subtitle: ''
+        card_mod:
+          style: "ha-card { padding: 8px 14px 6px 14px; }\nha-card .title {\n  margin: 0 !important;\n  font-size: 16px !important;\n\
+            \  font-weight: 700 !important;\n  display: inline-flex; align-items: center; gap: 8px;\n  background: linear-gradient(90deg,\
+            \ rgba(255,64,129,1), rgba(255,64,129,0.6));\n  -webkit-background-clip: text;\n  -webkit-text-fill-color: transparent;\n\
+            }\nha-card .title::before {\n  content: \"\U0001F469\";\n  -webkit-text-fill-color: initial;\n  background: none\
+            \ !important;\n}\nha-card .subtitle { display: none !important; }\n"
+      - type: custom:mushroom-select-card
+        entity: input_select.bilancia_user2_sesso
+        name: Sesso
+        icon: mdi:gender-male-female
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+            \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+            \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      - type: custom:mushroom-number-card
+        entity: input_number.bilancia_user2_eta
+        name: Età
+        icon: mdi:cake-variant
+        display_mode: buttons
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+            \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+            \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      - type: custom:mushroom-number-card
+        entity: input_number.bilancia_user2_altezza
+        name: Altezza
+        icon: mdi:human-male-height
+        display_mode: buttons
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+            \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+            \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:mushroom-number-card
+          entity: input_number.bilancia_user2_peso_min
+          name: Peso min
+          icon: mdi:arrow-down-bold
+          display_mode: buttons
+          card_mod:
+            style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+              \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+              \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+        - type: custom:mushroom-number-card
+          entity: input_number.bilancia_user2_peso_max
+          name: Peso max
+          icon: mdi:arrow-up-bold
+          display_mode: buttons
+          card_mod:
+            style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+              \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+              \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      card_mod:
+        style: "ha-card {\n  background: linear-gradient(160deg, rgba(255,64,129,0.10) 0%, rgba(20,30,50,0.95) 100%);\n  border:\
+          \ 1px solid rgba(255,64,129,0.3);\n  border-radius: 24px;\n  padding: 12px;\n  backdrop-filter: blur(10px);\n}\n"
+  - type: grid
+    column_span: 1
+    cards:
+    - type: vertical-stack
+      cards:
+      - type: custom:mushroom-title-card
+        title: PROFILO USER3
+        subtitle: ''
+        card_mod:
+          style: "ha-card { padding: 8px 14px 6px 14px; }\nha-card .title {\n  margin: 0 !important;\n  font-size: 16px !important;\n\
+            \  font-weight: 700 !important;\n  display: inline-flex; align-items: center; gap: 8px;\n  background: linear-gradient(90deg,\
+            \ rgba(179,136,255,1), rgba(179,136,255,0.6));\n  -webkit-background-clip: text;\n  -webkit-text-fill-color: transparent;\n\
+            }\nha-card .title::before {\n  content: \"\U0001F467\";\n  -webkit-text-fill-color: initial;\n  background: none\
+            \ !important;\n}\nha-card .subtitle { display: none !important; }\n"
+      - type: custom:mushroom-select-card
+        entity: input_select.bilancia_user3_sesso
+        name: Sesso
+        icon: mdi:gender-male-female
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+            \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+            \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      - type: custom:mushroom-number-card
+        entity: input_number.bilancia_user3_eta
+        name: Età
+        icon: mdi:cake-variant
+        display_mode: buttons
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+            \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+            \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      - type: custom:mushroom-number-card
+        entity: input_number.bilancia_user3_altezza
+        name: Altezza
+        icon: mdi:human-male-height
+        display_mode: buttons
+        card_mod:
+          style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+            \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+            \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      - type: horizontal-stack
+        cards:
+        - type: custom:mushroom-number-card
+          entity: input_number.bilancia_user3_peso_min
+          name: Peso min
+          icon: mdi:arrow-down-bold
+          display_mode: buttons
+          card_mod:
+            style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+              \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+              \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+        - type: custom:mushroom-number-card
+          entity: input_number.bilancia_user3_peso_max
+          name: Peso max
+          icon: mdi:arrow-up-bold
+          display_mode: buttons
+          card_mod:
+            style: "ha-card {\n  background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));\n  border:\
+              \ 1px solid rgba(255,255,255,0.18);\n  border-radius: 12px;\n}\n.primary, .secondary { color: #ffffff !important;\
+              \ }\nmushroom-shape-icon { --shape-color: rgba(255,255,255,0.12) !important; }\n"
+      card_mod:
+        style: "ha-card {\n  background: linear-gradient(160deg, rgba(179,136,255,0.10) 0%, rgba(20,30,50,0.95) 100%);\n \
+          \ border: 1px solid rgba(179,136,255,0.3);\n  border-radius: 24px;\n  padding: 12px;\n  backdrop-filter: blur(10px);\n\
+          }\n"
+  theme: ios-dark-mode-blue-red

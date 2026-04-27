@@ -1,0 +1,28 @@
+[Unit]
+Description=Mondeer/WanKa C1 BLE listener
+After=bluetooth.target network-online.target
+Wants=bluetooth.target network-online.target
+
+[Service]
+Type=simple
+# Adjust these paths/users to your environment.
+User=pi
+Group=bluetooth
+WorkingDirectory=/opt/mondeer-wanka-c1-listener
+ExecStart=/opt/mondeer-wanka-c1-listener/.venv/bin/python -m listener.scale_listener
+Restart=on-failure
+RestartSec=10s
+
+# Environment file with secrets (chmod 600). Alternative to listener/config.yaml
+# for the sensitive values:
+# EnvironmentFile=-/etc/bilancia-mondeer.env
+
+# Hardening (optional)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/opt/mondeer-wanka-c1-listener /var/lib/bilancia-mondeer
+
+[Install]
+WantedBy=multi-user.target
