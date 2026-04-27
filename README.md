@@ -1,14 +1,15 @@
-# Mondeer / WanKa C1 BLE listener
+# Mondeer Bluetooth scale — Home Assistant integration
 
-A Python BLE listener for **Mondeer / WanKa C1 / CE-Link OEM bathroom
-scales**, with a Home Assistant integration via MQTT.
+A Python BLE listener for **Mondeer Bluetooth bathroom scales** (and
+the OEM family they belong to), with a Home Assistant integration via
+MQTT.
 
-The original Android app (`com.mondeer.scale`) stopped working on Android
-14+ and the manufacturer never released an update. This project is the
-result of reverse-engineering the BLE protocol used by that app, then
-re-implementing it in Python so the scale can be used **without any phone**:
-a small always-on PC near the scale captures every weighing and pushes the
-data to Home Assistant.
+The original Android app (`com.mondeer.scale`) stopped working on
+Android 14+ and the manufacturer never released an update. This project
+is the result of reverse-engineering the BLE protocol used by that app,
+then re-implementing it in Python so the scale can be used **without
+any phone**: a small always-on PC near the scale captures every
+weighing and pushes the data to Home Assistant.
 
 > **Status:** working in production (one family of three, daily use).
 > Tested on Windows 11. Linux/BlueZ should work but has had less testing.
@@ -46,19 +47,20 @@ Telegram notification example:
 
 ```text
    ┌───────────┐  BLE   ┌──────────────────┐   MQTT   ┌─────────────────┐
-   │ WanKa C1  │◀──────▶│  Listener (PC)   │─────────▶│ Mosquitto       │
-   │  scale    │        │  Python + Bleak  │          │ + Home Assistant│
+   │  Mondeer  │◀──────▶│  Listener (PC)   │─────────▶│ Mosquitto       │
+   │   scale   │        │  Python + Bleak  │          │ + Home Assistant│
    └───────────┘        └──────────────────┘          └─────────────────┘
        ~10s window                                       sensors, dashboard,
        per weighing                                      automations, Telegram
 ```
 
-The scale powers on for ~10 seconds when somebody steps on it, advertises
-the BLE peripheral `WanKa C1` with primary service UUID `0xcc08`, then
-powers off. The listener keeps a permanent BLE scanner running, connects
-on-the-fly when the advertising packet appears, and runs the full
-handshake (binding → profile registration → time sync) in well under one
-second so there is enough time left for the BIA measurement to complete.
+The scale powers on for ~10 seconds when somebody steps on it,
+advertises a BLE peripheral with primary service UUID `0xcc08`, then
+powers off. The listener keeps a permanent BLE scanner running,
+connects on-the-fly when the advertising packet appears, and runs the
+full handshake (binding → profile registration → time sync) in well
+under one second so there is enough time left for the BIA measurement
+to complete.
 
 A more detailed protocol description lives in
 [docs/PROTOCOL.md](docs/PROTOCOL.md). The reverse-engineering methodology
@@ -73,8 +75,8 @@ is in [docs/REVERSE_ENGINEERING.md](docs/REVERSE_ENGINEERING.md).
 Requires **Python 3.10+** and a working BLE adapter (BT 4.0 or newer).
 
 ```bash
-git clone https://github.com/MicheleMercuri/mondeer-wanka-c1-listener.git
-cd mondeer-wanka-c1-listener
+git clone https://github.com/MicheleMercuri/mondeer-bluetooth-scale-ha.git
+cd mondeer-bluetooth-scale-ha
 python -m venv .venv
 .venv/bin/pip install -r listener/requirements.txt   # Linux/macOS
 # .venv\Scripts\pip install -r listener/requirements.txt   # Windows
@@ -113,14 +115,15 @@ Full HA integration guide: [docs/HOME_ASSISTANT.md](docs/HOME_ASSISTANT.md).
 
 ## Compatibility
 
-The CE-Link reference design (chip and stack) is OEMed under many brands.
-This listener should also work — possibly with minimal tweaks — on any
-scale that:
+Mondeer scales share the same Bluetooth chip and protocol with several
+other rebranded models from the same OEM family. This listener should
+work — possibly with minimal tweaks — on any BLE bathroom scale that:
 
 - Advertises a primary BLE service `0xcc08`
-- Has BT name containing one of: `WanKa`, `Mondeer`, `CE-Link`, `Cheng`,
-  `Scale`
 - Sends 32-byte weight records on `cmd=2 data=4`
+
+Technical names of identified compatible advertising patterns are
+documented in [docs/PROTOCOL.md](docs/PROTOCOL.md).
 
 Reports of working/non-working scales are very welcome — open an issue
 with the device name, BT MAC OUI, and a couple of `pkt dev=...` log lines.
