@@ -13,7 +13,15 @@ data to Home Assistant.
 > **Status:** working in production (one family of three, daily use).
 > Tested on Windows 11. Linux/BlueZ should work but has had less testing.
 
-![Dashboard preview](screenshots/dashboard-preview.png)
+![Dashboard preview — 3-column family view with weight history, BMI, body fat / water / muscle gauges](screenshots/dashboard.png)
+
+A weighing in action (10 s clip — step on the scale, the listener catches
+the BLE advertising, the Telegram notification arrives):
+[**▶ watch the video**](screenshots/video.mp4).
+
+Telegram notification example:
+
+![Telegram notification with full body composition (weight, BMI, body fat, water, bone, muscle, visceral fat, BMR)](screenshots/telegram.jpeg)
 
 ---
 
@@ -35,7 +43,7 @@ data to Home Assistant.
 
 ## How it works
 
-```
+```text
    ┌───────────┐  BLE   ┌──────────────────┐   MQTT   ┌─────────────────┐
    │ WanKa C1  │◀──────▶│  Listener (PC)   │─────────▶│ Mosquitto       │
    │  scale    │        │  Python + Bleak  │          │ + Home Assistant│
@@ -120,7 +128,7 @@ with the device name, BT MAC OUI, and a couple of `pkt dev=...` log lines.
 
 ## Repo layout
 
-```
+```text
 .
 ├── listener/                  # Python BLE listener + MQTT publisher
 │   ├── parser.py              # 20-byte BLE packet decoder, frame reassembly
