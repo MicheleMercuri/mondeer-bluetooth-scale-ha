@@ -82,7 +82,7 @@ private fun AppRoot(prefs: AppPrefs) {
             }
             composable("home") {
                 HomeScreen(
-                    profile = profile ?: Profile.MICHELE,
+                    profile = profile ?: Profile.USER1,
                     onSettingsClick = {
                         navController.navigate("setup")
                     },

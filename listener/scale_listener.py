@@ -40,9 +40,9 @@ from .ha_push import (
 from .classifier import classify, save_sample, MIN_SAMPLES_PER_USER, CONFIDENCE_THRESHOLD
 
 FAMILY_PROFILES = [
-    {"user_id": 1, "name": "michele",     "sex": 1, "age": 52, "height": 172, "wmin": 61, "wmax": 69, "is_admin": True},
-    {"user_id": 2, "name": "maria_luisa", "sex": 0, "age": 51, "height": 169, "wmin": 49, "wmax": 55, "is_admin": False},
-    {"user_id": 3, "name": "matilde",     "sex": 0, "age": 14, "height": 155, "wmin": 53, "wmax": 60, "is_admin": False},
+    {"user_id": 1, "name": "user1",     "sex": 1, "age": 52, "height": 172, "wmin": 61, "wmax": 69, "is_admin": True},
+    {"user_id": 2, "name": "user2", "sex": 0, "age": 51, "height": 169, "wmin": 49, "wmax": 55, "is_admin": False},
+    {"user_id": 3, "name": "user3",     "sex": 0, "age": 14, "height": 155, "wmin": 53, "wmax": 60, "is_admin": False},
 ]
 FAMILY_ID = 1
 
@@ -721,7 +721,7 @@ def _handle_weight_record(weight) -> None:
             log.warning("inquiry %s answered with no name: %r", inquiry_id, answer)
             return
         # Sanity check: validato sull'INTERA famiglia, non solo at_home.
-        # Caso d'uso: Maria Luisa è uscita senza il telefono → presence dice
+        # Caso d'uso: User2 è uscita senza il telefono → presence dice
         # not_home ma è davvero a casa. L'utente conferma via Telegram e
         # vogliamo accettarlo.
         if name not in all_users:

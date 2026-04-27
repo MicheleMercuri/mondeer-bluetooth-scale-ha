@@ -95,8 +95,8 @@ views:
         connection_sensor: sensor.YOUR_PHONE_wifi_connection
         zone_2: zone.ite_v_de_fazio
         travel_sensor_2: sensor.user1_to_home
-        watch_battery_sensor: sensor.galaxy_watch8_4wjb_battery_level
-        battery_state_sensor: sensor.galaxy_watch8_4wjb_battery_state
+        watch_battery_sensor: sensor.YOUR_WATCH_battery_level
+        battery_state_sensor: sensor.YOUR_WATCH_battery_state
         distance_sensor_2: sensor.user1_tracking_user1_distance
         state:
         - value: home
@@ -805,8 +805,8 @@ views:
         show_watch_battery: false
         battery_sensor: sensor.iphone_battery_level
         battery_state_sensor: sensor.iphone_battery_state
-        activity_sensor: sensor.iphone_activity
-        connection_sensor: sensor.iphone_ssid
+        activity_sensor: sensor.YOUR_PHONE_activity
+        connection_sensor: sensor.YOUR_PHONE_ssid
         zone_2: zone.liceo_s_g_galilei
         distance_sensor_2: sensor.proximity_user3_distance
         travel_sensor_2: sensor.user3_to_home

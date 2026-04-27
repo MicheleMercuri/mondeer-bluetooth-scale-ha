@@ -64,7 +64,7 @@ class AppPrefs @Inject constructor(
 
     /**
      * Altezza profilo in cm — usata per calcolare BMI in Health Connect.
-     * Default: profile-specific (Michele 172, Maria Luisa 169, Matilde 155).
+     * Default: profile-specific (User1 172, User2 169, User3 155).
      * Se l'utente cambia profilo, ricaricheremo il default.
      */
     var heightCm: Int

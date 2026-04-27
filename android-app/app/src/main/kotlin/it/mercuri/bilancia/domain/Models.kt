@@ -4,9 +4,9 @@ import java.time.Instant
 
 /** Profilo utente attivo sul telefono (single-user). */
 enum class Profile(val slug: String, val displayName: String) {
-    MICHELE("michele", "Michele"),
-    MARIA_LUISA("maria_luisa", "Maria Luisa"),
-    MATILDE("matilde", "Matilde");
+    USER1("user1", "User1"),
+    USER2("user2", "User2"),
+    USER3("user3", "User3");
 
     val mqttTopic: String get() = "bilancia_mondeer/peso_$slug/state"
 

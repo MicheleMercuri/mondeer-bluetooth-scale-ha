@@ -70,7 +70,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun HomeScreen(
-    profile: Profile = Profile.MICHELE,
+    profile: Profile = Profile.USER1,
     snapshot: WeighingSnapshot? = null,
     trendPoints: List<TrendPoint> = emptyList(),
     onSettingsClick: () -> Unit = {},

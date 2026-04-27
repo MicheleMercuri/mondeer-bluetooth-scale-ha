@@ -45,7 +45,7 @@ class HomeViewModel @Inject constructor(
         repo.ensureStarted()
     }
 
-    private val profile: Profile = prefs.selectedProfile ?: Profile.MICHELE
+    private val profile: Profile = prefs.selectedProfile ?: Profile.USER1
 
     private val latest: Flow<WeighingEntity?> = repo.latest(profile)
     private val last90Days: Flow<List<WeighingEntity>> = repo.range(
@@ -72,7 +72,7 @@ class HomeViewModel @Inject constructor(
 // Questi valori dovrebbero essere tenuti allineati con quelli usati nel
 // listener Python (FAMILY_PROFILES) e nei sensor template di HA.
 private fun rangesFor(profile: Profile): ProfileRanges = when (profile) {
-    Profile.MICHELE -> ProfileRanges(
+    Profile.USER1 -> ProfileRanges(
         weightMin = 61.0, weightMax = 69.0,
         bmiMin = 18.5, bmiMax = 25.0,
         fatMin = 14.0, fatMax = 24.0,
@@ -81,7 +81,7 @@ private fun rangesFor(profile: Profile): ProfileRanges = when (profile) {
         boneMin = 2.0, boneMax = 3.5,
         visceralMin = 1.0, visceralMax = 12.0,
     )
-    Profile.MARIA_LUISA -> ProfileRanges(
+    Profile.USER2 -> ProfileRanges(
         weightMin = 49.0, weightMax = 55.0,
         bmiMin = 18.5, bmiMax = 25.0,
         fatMin = 21.0, fatMax = 33.0,
@@ -90,7 +90,7 @@ private fun rangesFor(profile: Profile): ProfileRanges = when (profile) {
         boneMin = 1.8, boneMax = 3.0,
         visceralMin = 1.0, visceralMax = 9.0,
     )
-    Profile.MATILDE -> ProfileRanges(
+    Profile.USER3 -> ProfileRanges(
         weightMin = 53.0, weightMax = 60.0,
         bmiMin = 18.5, bmiMax = 25.0,
         fatMin = 21.0, fatMax = 33.0,

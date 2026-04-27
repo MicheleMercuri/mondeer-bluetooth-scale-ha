@@ -1,168 +1,163 @@
-# Bilancia — App Android
+# WeighAi — Android companion app
 
-App Android nativa per visualizzare le pesate della bilancia Mondeer/WanKa C1
-ricevute via MQTT da Home Assistant. Esporta verso Health Connect → Samsung
-Health, Google Fit, Fitbit, ecc.
+Native Android app that displays the readings of the Mondeer/WanKa C1
+Bluetooth scale received via MQTT from Home Assistant. Exports to
+**Health Connect** so Samsung Health, Google Fit, Fitbit and any other
+compatible app pick up the data automatically.
 
-## Setup ambiente
+## Build environment
 
-1. **Android Studio Ladybug | 2024.2.1+** installato
-2. Apri questo progetto: `File → Open` → seleziona la cartella `android-app/`
-3. Android Studio scarica automaticamente le dipendenze e genera il Gradle wrapper
-4. Sync gradle (banner giallo "Sync Now"): aspetta che finisca
+1. **Android Studio Ladybug | 2024.2.1+** (or newer)
+2. Open the project: `File → Open` → select the `android-app/` folder
+3. Android Studio will fetch the dependencies and the Gradle wrapper
+4. Wait for the Gradle sync banner ("Sync Now") to finish
 
 ## Build & install (sideload)
 
-Dispositivo Android collegato via USB con **debug USB attivo**:
+Connect an Android device with **USB debugging enabled**:
 
-1. Apri il dispositivo in Device Manager (Android Studio → Tools → Device Manager)
-2. Run → Run 'app' (Shift+F10) → seleziona dispositivo → Build & install
-3. L'app `Bilancia` appare nel drawer
+1. Open the device in Device Manager (Tools → Device Manager)
+2. Run → Run 'app' (Shift+F10) → pick the device → build & install
+3. The `WeighAi` app appears in the launcher
 
-In alternativa per condividere l'APK fuori da Android Studio:
+To produce a shareable APK without Android Studio:
 
 ```bash
 ./gradlew assembleDebug
-# APK output: app/build/outputs/apk/debug/app-debug.apk
+# Output APK: app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Poi mandalo via Telegram/email ai familiari, abilitano "Origini sconosciute"
-e installano.
+You can then send the APK via Telegram / email / Drive — the recipient
+must enable "Install unknown apps" for that source and tap to install.
 
-## Configurazione iniziale
+## First-run setup wizard
 
-Al primo avvio l'app chiede:
+On first launch the app prompts for:
 
-- Indirizzo broker MQTT (es. `192.168.1.190`)
-- Porta (default 1883)
-- Username + password MQTT
-- **Quale utente sei tu** (Michele/Maria Luisa/Matilde)
+- MQTT broker host (FQDN or IP)
+- MQTT broker port
+- MQTT username + password
+- **Which family member is the phone owner** (the user picks one of the
+  profiles configured on the listener side)
 
-Le credenziali vanno in EncryptedSharedPreferences (Android Keystore-backed).
+Credentials are stored via `EncryptedSharedPreferences` (Android
+Keystore-backed), never in plaintext.
 
-## Privacy by design — un telefono = un utente
+## Privacy by design — one phone, one user
 
-L'app è **single-user**: ogni telefono mostra **solo le pesate del proprio
-proprietario**, mai quelle degli altri familiari. La scelta del profilo
-fatta nel setup wizard determina l'unico topic MQTT a cui l'app fa
-subscribe:
+The app is **single-user**: each phone shows **only its owner's
+readings**, never the other family members'. The profile selected in
+the setup wizard determines the only MQTT topic the app subscribes to:
 
-| Telefono                | Profilo configurato | Topic MQTT (solo questo)                    |
-|-------------------------|---------------------|---------------------------------------------|
-| S24 di Michele          | `michele`           | `bilancia_mondeer/peso_michele/state`       |
-| Telefono di Maria Luisa | `maria_luisa`       | `bilancia_mondeer/peso_maria_luisa/state`   |
-| iPhone di Matilde       | `matilde`           | `bilancia_mondeer/peso_matilde/state`       |
+| Phone owner   | Configured profile | Subscribed MQTT topic                        |
+|---------------|--------------------|----------------------------------------------|
+| Father        | `father`           | `bilancia_mondeer/peso_father/state`         |
+| Mother        | `mother`           | `bilancia_mondeer/peso_mother/state`         |
+| Son           | `son`              | `bilancia_mondeer/peso_son/state`            |
 
-Stessa logica per Health Connect: ogni telefono scrive sull'HC del proprio
-proprietario solo le proprie pesate. Niente "vista famiglia" sull'app —
-l'overview multi-utente resta su Home Assistant (dashboard "Biometria").
+The same applies to Health Connect: each phone writes only its owner's
+readings to the local HC store. There is no "family overview" inside
+the app — the multi-user dashboard lives on Home Assistant.
 
-## Stack tecnico
+## Tech stack
 
-- **Kotlin 2.1** + **Jetpack Compose** (UI declarativa)
-- **Material 3** + dynamic color (Material You) su Android 12+
-- **Hilt** per dependency injection
-- **Room** (SQLite) per storage offline
-- **HiveMQ MQTT Client** (sostituto moderno di paho-mqtt-android)
-- **Vico** per i grafici
-- **Health Connect SDK** (hub unico → propaga a Samsung Health, Google
-  Fit, Fitbit, Garmin Connect, ecc. — vedi sezione dedicata sotto)
-- **Coroutines + Flow** per reattività
+- **Kotlin 2.2** + **Jetpack Compose** (declarative UI)
+- **Material 3** + dynamic color (Material You) on Android 12+
+- **Hilt** for dependency injection
+- **Room** (SQLite) for offline storage
+- **HiveMQ MQTT Client** (modern replacement for the deprecated
+  `paho-mqtt-android`)
+- **Health Connect SDK 1.1.0 stable** — single hub that propagates
+  to Samsung Health, Google Fit, Fitbit, Garmin Connect, etc.
+- **Coroutines + Flow** for reactive data flows
+- Custom Compose Canvas charts — no external chart library
 
-## Integrazione Samsung Health / Google Fit / Fitbit
+## A note on UI strings
 
-Dal 2023 Samsung ha **deprecato** la propria SDK proprietaria
-(Samsung Health Data SDK) e ha indirizzato tutti gli sviluppatori su
-**Health Connect**, l'hub unificato Android di Google. Stessa cosa
-hanno fatto Google Fit (in fase di chiusura) e Fitbit. Una singola
-integrazione lato app copre quindi automaticamente tutti questi
-ecosistemi:
+The UI is written in **Italian** (the original audience). Strings are
+inlined in Compose calls (`Text("…")`), not in `res/values/strings.xml`.
+A future pass will move them to a localized `strings.xml` so other
+locales can override them.
+
+## Health Connect integration
+
+Since 2023 Samsung **deprecated** its proprietary SDK (Samsung Health
+Data SDK) and pointed all developers to **Health Connect**, Android's
+unified health hub. Google Fit (being phased out) and Fitbit followed
+the same path. A single integration on the app side automatically
+covers all those ecosystems:
 
 ```text
-Bilancia (questa app)
+WeighAi (this app)
      │
      │ Health Connect SDK
      ▼
 ┌──────────────────┐
-│  Health Connect  │ (preinstallato su Android 14+)
+│  Health Connect  │ (preinstalled on Android 14+)
 └────────┬─────────┘
-         │ (sync automatico, una volta dato il consenso)
+         │ (auto-sync once the user grants consent)
          ├──▶ Samsung Health
          ├──▶ Google Fit
          ├──▶ Fitbit
          ├──▶ Garmin Connect
-         └──▶ qualunque altra app compatibile
+         └──▶ any other compatible app
 ```
 
-### Setup utente per vedere i dati in Samsung Health
+### Enabling Samsung Health to read the data
 
-1. Health Connect (preinstallato su Android 14+, altrimenti Play Store)
-2. Aprire Samsung Health → Settings → **Health Connect** → toggle ON
-3. Aprire questa app → Impostazioni → **Esporta su Health Connect** →
-   concedere i permessi richiesti per le metriche `Body Weight`,
-   `Body Fat`, `Hydration` (= acqua corporea), `Bone Mass`,
-   `Lean Body Mass` (= massa muscolare), `Basal Metabolic Rate` (= BMR)
+1. Health Connect (preinstalled on Android 14+, otherwise from Play Store)
+2. Open Samsung Health → Settings → **Health Connect** → toggle ON
+3. Open this app → Setup → **Export to Health Connect** → grant the
+   permissions for `Body Weight`, `Body Fat`, `Hydration`,
+   `Bone Mass`, `Lean Body Mass`, `Basal Metabolic Rate`
 
-Da quel momento ogni pesata viene scritta su Health Connect e
-Samsung Health la riceve entro pochi secondi.
+From that point on every reading is written to Health Connect and
+Samsung Health receives it within seconds.
 
-### Metriche esportate
+### Exported metrics
 
-| Metrica nostro modello | Health Connect record type                            |
-|------------------------|-------------------------------------------------------|
-| `weight_kg`            | `WeightRecord`                                        |
-| `fat_pct`              | `BodyFatRecord`                                       |
-| `water_pct`            | `HydrationRecord` (calcolato)                         |
-| `bone_kg`              | `BoneMassRecord`                                      |
-| `muscle_kg`            | `LeanBodyMassRecord`                                  |
-| `bmi`                  | calcolato da WeightRecord + altezza nel profilo HC    |
-| `calorie_kcal`         | `BasalMetabolicRateRecord`                            |
+| App field         | Health Connect record type                            |
+|-------------------|-------------------------------------------------------|
+| `weight_kg`       | `WeightRecord`                                        |
+| `fat_pct`         | `BodyFatRecord`                                       |
+| `water_pct`       | `BodyWaterMassRecord` (computed: weight × pct/100)    |
+| `bone_kg`         | `BoneMassRecord`                                      |
+| `muscle_kg`       | `LeanBodyMassRecord` (computed: weight × (1 − fat%))  |
+| `bmi`             | derived in HC from WeightRecord + height in profile   |
+| `calorie_kcal`    | `BasalMetabolicRateRecord`                            |
 
-## Struttura progetto
+## Project structure
 
 ```text
 app/src/main/
 ├── AndroidManifest.xml
 ├── kotlin/it/mercuri/bilancia/
-│   ├── BilanciaApp.kt              Application + Hilt entry
+│   ├── BilanciaApp.kt              Application + Hilt entry point
 │   ├── MainActivity.kt             Single activity + nav graph
 │   ├── data/
-│   │   ├── db/                     Room (entity, dao, db)
+│   │   ├── db/                     Room (entity, dao, database)
 │   │   ├── mqtt/                   HiveMQ client wrapper
-│   │   └── repository/             BilanciaRepository
-│   ├── domain/                     modelli + use case
+│   │   ├── healthconnect/          Health Connect exporter
+│   │   ├── log/                    in-app debug log buffer
+│   │   ├── repository/             single source of truth
+│   │   └── AppPrefs.kt             EncryptedSharedPreferences wrapper
+│   ├── domain/                     models + use cases
 │   ├── ui/
 │   │   ├── theme/                  Material 3 colors
-│   │   ├── home/                   schermata principale (3 cards user)
-│   │   ├── detail/                 dettaglio utente con grafici
-│   │   ├── setup/                  wizard configurazione iniziale
-│   │   └── common/                 componenti riusabili
-│   ├── healthconnect/              integrazione Health Connect
-│   └── notify/                     notifiche push locali
-└── res/
-    ├── values/                     strings, themes, colors
-    └── values-night/               theme dark
+│   │   ├── home/                   main screen + Hero3DGauge
+│   │   ├── setup/                  first-run wizard
+│   │   └── common/                 reusable Compose components
+│   └── res/
+│       ├── values/                 strings, themes, colors
+│       └── values-night/           dark theme overrides
 ```
 
-## Min SDK
+## Minimum SDK
 
-- **Android 14 (API 34)** — necessario per Health Connect nativo.
-  Tutti i telefoni di casa (Samsung S24, ecc.) sono Android 16+, ampiamente coperti.
-
-## Roadmap
-
-- [x] Scaffold del progetto + theme + Home con cards mock
-- [ ] Setup wizard MQTT + persistenza credenziali cifrate
-- [ ] HiveMQ MQTT client + subscribe ai topic `bilancia_mondeer/peso_*/state`
-- [ ] Room database con history pesate
-- [ ] Detail screen con grafici Vico (peso/grasso/acqua nel tempo)
-- [ ] Notifiche push al ricevimento di nuova pesata
-- [ ] Export Health Connect (peso, body fat, water, bone mass)
-- [ ] Sharing PDF report (per dietologo)
-- [ ] Tagging proximity (vedi `mondeer-bluetooth-scale-ha`): l'app pubblica
-      su MQTT quando vede l'advertising BLE della bilancia, il listener
-      attribuisce la pesata all'utente più vicino
+- **Android 14 (API 34)** — required for native Health Connect on
+  Android 14+. Older versions can install Health Connect via the Play
+  Store but are not the primary target.
 
 ## License
 
-MIT (vedi LICENSE del progetto principale).
+MIT — see the LICENSE file in the repo root.

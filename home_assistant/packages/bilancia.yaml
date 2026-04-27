@@ -1,9 +1,9 @@
 # Bilancia Mondeer / WanKa C1 — template sensors + valutazione range ottimali
 #
 # Il listener Python (mipc Windows) pusha i pesi via REST API in:
-#   sensor.peso_michele
-#   sensor.peso_maria_luisa
-#   sensor.peso_matilde
+#   sensor.peso_user1
+#   sensor.peso_user2
+#   sensor.peso_user3
 #
 # State = peso kg, attributi = bmi/fat/water/bone/muscle/visceral/calorie/...
 #
@@ -24,25 +24,25 @@
 # Il listener Python li legge ad ogni connect e li manda alla bilancia.
 # ============================================================
 input_select:
-  bilancia_michele_sesso:
-    name: "Sesso Michele"
+  bilancia_user1_sesso:
+    name: "Sesso User1"
     options: [M, F]
     initial: M
     icon: mdi:gender-male-female
-  bilancia_maria_luisa_sesso:
-    name: "Sesso Maria Luisa"
+  bilancia_user2_sesso:
+    name: "Sesso User2"
     options: [M, F]
     initial: F
     icon: mdi:gender-male-female
-  bilancia_matilde_sesso:
-    name: "Sesso Matilde"
+  bilancia_user3_sesso:
+    name: "Sesso User3"
     options: [M, F]
     initial: F
     icon: mdi:gender-male-female
 
 input_number:
-  bilancia_michele_eta:
-    name: "Età Michele"
+  bilancia_user1_eta:
+    name: "Età User1"
     min: 0
     max: 120
     step: 1
@@ -50,8 +50,8 @@ input_number:
     unit_of_measurement: anni
     icon: mdi:cake-variant
     mode: box
-  bilancia_michele_altezza:
-    name: "Altezza Michele"
+  bilancia_user1_altezza:
+    name: "Altezza User1"
     min: 100
     max: 220
     step: 1
@@ -59,8 +59,8 @@ input_number:
     unit_of_measurement: cm
     icon: mdi:human-male-height
     mode: box
-  bilancia_michele_peso_min:
-    name: "Peso min Michele"
+  bilancia_user1_peso_min:
+    name: "Peso min User1"
     min: 30
     max: 200
     step: 0.5
@@ -68,8 +68,8 @@ input_number:
     unit_of_measurement: kg
     icon: mdi:arrow-down-bold
     mode: box
-  bilancia_michele_peso_max:
-    name: "Peso max Michele"
+  bilancia_user1_peso_max:
+    name: "Peso max User1"
     min: 30
     max: 200
     step: 0.5
@@ -77,8 +77,8 @@ input_number:
     unit_of_measurement: kg
     icon: mdi:arrow-up-bold
     mode: box
-  bilancia_maria_luisa_eta:
-    name: "Età Maria Luisa"
+  bilancia_user2_eta:
+    name: "Età User2"
     min: 0
     max: 120
     step: 1
@@ -86,8 +86,8 @@ input_number:
     unit_of_measurement: anni
     icon: mdi:cake-variant
     mode: box
-  bilancia_maria_luisa_altezza:
-    name: "Altezza Maria Luisa"
+  bilancia_user2_altezza:
+    name: "Altezza User2"
     min: 100
     max: 220
     step: 1
@@ -95,8 +95,8 @@ input_number:
     unit_of_measurement: cm
     icon: mdi:human-female-height
     mode: box
-  bilancia_maria_luisa_peso_min:
-    name: "Peso min Maria Luisa"
+  bilancia_user2_peso_min:
+    name: "Peso min User2"
     min: 30
     max: 200
     step: 0.5
@@ -104,8 +104,8 @@ input_number:
     unit_of_measurement: kg
     icon: mdi:arrow-down-bold
     mode: box
-  bilancia_maria_luisa_peso_max:
-    name: "Peso max Maria Luisa"
+  bilancia_user2_peso_max:
+    name: "Peso max User2"
     min: 30
     max: 200
     step: 0.5
@@ -113,8 +113,8 @@ input_number:
     unit_of_measurement: kg
     icon: mdi:arrow-up-bold
     mode: box
-  bilancia_matilde_eta:
-    name: "Età Matilde"
+  bilancia_user3_eta:
+    name: "Età User3"
     min: 0
     max: 120
     step: 1
@@ -122,8 +122,8 @@ input_number:
     unit_of_measurement: anni
     icon: mdi:cake-variant
     mode: box
-  bilancia_matilde_altezza:
-    name: "Altezza Matilde"
+  bilancia_user3_altezza:
+    name: "Altezza User3"
     min: 100
     max: 220
     step: 1
@@ -131,8 +131,8 @@ input_number:
     unit_of_measurement: cm
     icon: mdi:human-female-height
     mode: box
-  bilancia_matilde_peso_min:
-    name: "Peso min Matilde"
+  bilancia_user3_peso_min:
+    name: "Peso min User3"
     min: 30
     max: 200
     step: 0.5
@@ -140,8 +140,8 @@ input_number:
     unit_of_measurement: kg
     icon: mdi:arrow-down-bold
     mode: box
-  bilancia_matilde_peso_max:
-    name: "Peso max Matilde"
+  bilancia_user3_peso_max:
+    name: "Peso max User3"
     min: 30
     max: 200
     step: 0.5
@@ -157,31 +157,31 @@ input_number:
 
 mqtt:
   sensor:
-    - name: "Peso Michele"
-      unique_id: bilancia_peso_michele_v2
-      state_topic: "bilancia_mondeer/peso_michele/state"
+    - name: "Peso User1"
+      unique_id: bilancia_peso_user1_v2
+      state_topic: "bilancia_mondeer/peso_user1/state"
       value_template: "{{ value_json.weight_kg }}"
-      json_attributes_topic: "bilancia_mondeer/peso_michele/state"
+      json_attributes_topic: "bilancia_mondeer/peso_user1/state"
       unit_of_measurement: "kg"
       device_class: weight
       state_class: measurement
       icon: mdi:scale-bathroom
 
-    - name: "Peso Maria Luisa"
-      unique_id: bilancia_peso_maria_luisa_v2
-      state_topic: "bilancia_mondeer/peso_maria_luisa/state"
+    - name: "Peso User2"
+      unique_id: bilancia_peso_user2_v2
+      state_topic: "bilancia_mondeer/peso_user2/state"
       value_template: "{{ value_json.weight_kg }}"
-      json_attributes_topic: "bilancia_mondeer/peso_maria_luisa/state"
+      json_attributes_topic: "bilancia_mondeer/peso_user2/state"
       unit_of_measurement: "kg"
       device_class: weight
       state_class: measurement
       icon: mdi:scale-bathroom
 
-    - name: "Peso Matilde"
-      unique_id: bilancia_peso_matilde_v2
-      state_topic: "bilancia_mondeer/peso_matilde/state"
+    - name: "Peso User3"
+      unique_id: bilancia_peso_user3_v2
+      state_topic: "bilancia_mondeer/peso_user3/state"
       value_template: "{{ value_json.weight_kg }}"
-      json_attributes_topic: "bilancia_mondeer/peso_matilde/state"
+      json_attributes_topic: "bilancia_mondeer/peso_user3/state"
       unit_of_measurement: "kg"
       device_class: weight
       state_class: measurement
@@ -226,9 +226,9 @@ automation:
     trigger:
       - platform: state
         entity_id:
-          - sensor.peso_michele
-          - sensor.peso_maria_luisa
-          - sensor.peso_matilde
+          - sensor.peso_user1
+          - sensor.peso_user2
+          - sensor.peso_user3
         attribute: measured_at
     condition:
       - "{{ trigger.to_state.state not in ['unknown','unavailable'] }}"
@@ -238,7 +238,7 @@ automation:
           slug: "{{ trigger.entity_id.split('.peso_')[1] }}"
           name: "{{ slug.replace('_', ' ').title() }}"
           icon_emoji: >-
-            {% if slug == 'michele' %}👨{% elif slug == 'maria_luisa' %}👩{% else %}👧{% endif %}
+            {% if slug == 'user1' %}👨{% elif slug == 'user2' %}👩{% else %}👧{% endif %}
           peso: "{{ trigger.to_state.state }}"
           delta: "{{ states('sensor.peso_' + slug + '_scostamento_mensile') }}"
           bmi: "{{ states('sensor.peso_' + slug + '_bmi') }}"
@@ -325,9 +325,9 @@ automation:
           # perché i nostri callback_data contengono ":" interni
           # (formato "bw:<inquiry_id>:<slug>") e il parser HA si confonde.
           inline_keyboard:
-            - - ["👨 Michele", "bw:{{ inquiry_id }}:michele"]
-              - ["👩 Maria Luisa", "bw:{{ inquiry_id }}:maria_luisa"]
-              - ["👧 Matilde", "bw:{{ inquiry_id }}:matilde"]
+            - - ["👨 User1", "bw:{{ inquiry_id }}:user1"]
+              - ["👩 User2", "bw:{{ inquiry_id }}:user2"]
+              - ["👧 User3", "bw:{{ inquiry_id }}:user3"]
 
   - alias: "Bilancia · Risposta callback Telegram → MQTT answer"
     id: bilancia_inquiry_answer
@@ -344,9 +344,9 @@ automation:
           inquiry_id: "{{ parts[1] }}"
           user_slug: "{{ parts[2] }}"
           user_label: >-
-            {%- if user_slug == 'michele' -%}Michele
-            {%- elif user_slug == 'maria_luisa' -%}Maria Luisa
-            {%- elif user_slug == 'matilde' -%}Matilde
+            {%- if user_slug == 'user1' -%}User1
+            {%- elif user_slug == 'user2' -%}User2
+            {%- elif user_slug == 'user3' -%}User3
             {%- else -%}{{ user_slug }}
             {%- endif -%}
       # Ack del bottone (toglie lo spinner su Telegram)
@@ -384,7 +384,7 @@ automation:
     trigger:
       - platform: state
         entity_id:
-          - sensor.peso_michele
+          - sensor.peso_user1
         attribute: measured_at
     condition:
       - "{{ trigger.to_state.state not in ['unknown','unavailable'] }}"
@@ -422,7 +422,7 @@ automation:
       #    + ricostruiamo dai sensori derivati che teniamo già in HA.
       - variables:
           weekly_data: >-
-            {%- set users = ['michele', 'maria_luisa', 'matilde'] -%}
+            {%- set users = ['user1', 'user2', 'user3'] -%}
             {%- set out = {} -%}
             {%- for u in users -%}
               {%- set s = states('sensor.peso_' + u) -%}
@@ -444,8 +444,8 @@ automation:
             {{ out | tojson }}
           gemini_prompt: >-
             Sei un nutrizionista esperto. Analizza i dati delle ultime pesate
-            di una famiglia di 3 persone (Michele, uomo 52 anni 172 cm; Maria
-            Luisa, donna 51 anni 169 cm; Matilde, ragazza 14 anni 155 cm).
+            di una famiglia di 3 persone (User1, uomo 52 anni 172 cm; Maria
+            Luisa, donna 51 anni 169 cm; User3, ragazza 14 anni 155 cm).
 
             Dati ultima pesata di ciascuno (JSON):
             {{ weekly_data }}
@@ -498,22 +498,22 @@ template:
 
   - sensor:
       # ------------------------------------------------------------
-      # MICHELE — uomo 52 anni, 172 cm, range peso 61-69 kg
+      # USER1 — uomo 52 anni, 172 cm, range peso 61-69 kg
       # ------------------------------------------------------------
 
-      - name: "Peso Michele IMC"
-        unique_id: peso_michele_bmi
+      - name: "Peso User1 IMC"
+        unique_id: peso_user1_bmi
         unit_of_measurement: ""
         state_class: measurement
         icon: mdi:human-male
-        availability: "{{ state_attr('sensor.peso_michele', 'bmi') is not none }}"
-        state: "{{ state_attr('sensor.peso_michele', 'bmi') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user1', 'bmi') is not none }}"
+        state: "{{ state_attr('sensor.peso_user1', 'bmi') | float(0) | round(1) }}"
 
-      - name: "Peso Michele IMC stato"
-        unique_id: peso_michele_bmi_stato
-        availability: "{{ states('sensor.peso_michele_bmi') not in ['unknown','unavailable'] }}"
+      - name: "Peso User1 IMC stato"
+        unique_id: peso_user1_bmi_stato
+        availability: "{{ states('sensor.peso_user1_bmi') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_michele_bmi') | float(0) %}
+          {% set v = states('sensor.peso_user1_bmi') | float(0) %}
           {% if v < 18.5 %}sotto
           {% elif v <= 24.9 %}ottimale
           {% else %}sopra
@@ -522,19 +522,19 @@ template:
           range_min: 18.5
           range_max: 24.9
 
-      - name: "Peso Michele Massa grassa"
-        unique_id: peso_michele_grasso
+      - name: "Peso User1 Massa grassa"
+        unique_id: peso_user1_grasso
         unit_of_measurement: "%"
         state_class: measurement
         icon: mdi:water-percent
-        availability: "{{ state_attr('sensor.peso_michele', 'fat_percent') is not none }}"
-        state: "{{ state_attr('sensor.peso_michele', 'fat_percent') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user1', 'fat_percent') is not none }}"
+        state: "{{ state_attr('sensor.peso_user1', 'fat_percent') | float(0) | round(1) }}"
 
-      - name: "Peso Michele Massa grassa stato"
-        unique_id: peso_michele_grasso_stato
-        availability: "{{ states('sensor.peso_michele_grasso') not in ['unknown','unavailable'] }}"
+      - name: "Peso User1 Massa grassa stato"
+        unique_id: peso_user1_grasso_stato
+        availability: "{{ states('sensor.peso_user1_grasso') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_michele_grasso') | float(0) %}
+          {% set v = states('sensor.peso_user1_grasso') | float(0) %}
           {% if v < 14 %}sotto
           {% elif v <= 24 %}ottimale
           {% else %}sopra
@@ -543,19 +543,19 @@ template:
           range_min: 14
           range_max: 24
 
-      - name: "Peso Michele Acqua corporea"
-        unique_id: peso_michele_acqua
+      - name: "Peso User1 Acqua corporea"
+        unique_id: peso_user1_acqua
         unit_of_measurement: "%"
         state_class: measurement
         icon: mdi:water
-        availability: "{{ state_attr('sensor.peso_michele', 'water_percent') is not none }}"
-        state: "{{ state_attr('sensor.peso_michele', 'water_percent') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user1', 'water_percent') is not none }}"
+        state: "{{ state_attr('sensor.peso_user1', 'water_percent') | float(0) | round(1) }}"
 
-      - name: "Peso Michele Acqua corporea stato"
-        unique_id: peso_michele_acqua_stato
-        availability: "{{ states('sensor.peso_michele_acqua') not in ['unknown','unavailable'] }}"
+      - name: "Peso User1 Acqua corporea stato"
+        unique_id: peso_user1_acqua_stato
+        availability: "{{ states('sensor.peso_user1_acqua') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_michele_acqua') | float(0) %}
+          {% set v = states('sensor.peso_user1_acqua') | float(0) %}
           {% if v < 50 %}sotto
           {% elif v <= 65 %}ottimale
           {% else %}sopra
@@ -564,19 +564,19 @@ template:
           range_min: 50
           range_max: 65
 
-      - name: "Peso Michele Massa ossea"
-        unique_id: peso_michele_ossa
+      - name: "Peso User1 Massa ossea"
+        unique_id: peso_user1_ossa
         unit_of_measurement: "kg"
         state_class: measurement
         icon: mdi:bone
-        availability: "{{ state_attr('sensor.peso_michele', 'bone_kg') is not none }}"
-        state: "{{ state_attr('sensor.peso_michele', 'bone_kg') | float(0) | round(2) }}"
+        availability: "{{ state_attr('sensor.peso_user1', 'bone_kg') is not none }}"
+        state: "{{ state_attr('sensor.peso_user1', 'bone_kg') | float(0) | round(2) }}"
 
-      - name: "Peso Michele Massa ossea stato"
-        unique_id: peso_michele_ossa_stato
-        availability: "{{ states('sensor.peso_michele_ossa') not in ['unknown','unavailable'] }}"
+      - name: "Peso User1 Massa ossea stato"
+        unique_id: peso_user1_ossa_stato
+        availability: "{{ states('sensor.peso_user1_ossa') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_michele_ossa') | float(0) %}
+          {% set v = states('sensor.peso_user1_ossa') | float(0) %}
           {% if v < 2.9 %}sotto
           {% elif v <= 3.6 %}ottimale
           {% else %}sopra
@@ -585,19 +585,19 @@ template:
           range_min: 2.9
           range_max: 3.6
 
-      - name: "Peso Michele Massa muscolare"
-        unique_id: peso_michele_muscoli
+      - name: "Peso User1 Massa muscolare"
+        unique_id: peso_user1_muscoli
         unit_of_measurement: "kg"
         state_class: measurement
         icon: mdi:arm-flex
-        availability: "{{ state_attr('sensor.peso_michele', 'muscle_kg') is not none }}"
-        state: "{{ state_attr('sensor.peso_michele', 'muscle_kg') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user1', 'muscle_kg') is not none }}"
+        state: "{{ state_attr('sensor.peso_user1', 'muscle_kg') | float(0) | round(1) }}"
 
-      - name: "Peso Michele Massa muscolare stato"
-        unique_id: peso_michele_muscoli_stato
-        availability: "{{ states('sensor.peso_michele_muscoli') not in ['unknown','unavailable'] }}"
+      - name: "Peso User1 Massa muscolare stato"
+        unique_id: peso_user1_muscoli_stato
+        availability: "{{ states('sensor.peso_user1_muscoli') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_michele_muscoli') | float(0) %}
+          {% set v = states('sensor.peso_user1_muscoli') | float(0) %}
           {% if v < 20 %}sotto
           {% elif v <= 30 %}ottimale
           {% else %}sopra
@@ -606,19 +606,19 @@ template:
           range_min: 20
           range_max: 30
 
-      - name: "Peso Michele Grasso viscerale"
-        unique_id: peso_michele_viscerale
+      - name: "Peso User1 Grasso viscerale"
+        unique_id: peso_user1_viscerale
         unit_of_measurement: ""
         state_class: measurement
         icon: mdi:stomach
-        availability: "{{ state_attr('sensor.peso_michele', 'visceral_fat') is not none }}"
-        state: "{{ state_attr('sensor.peso_michele', 'visceral_fat') | int(0) }}"
+        availability: "{{ state_attr('sensor.peso_user1', 'visceral_fat') is not none }}"
+        state: "{{ state_attr('sensor.peso_user1', 'visceral_fat') | int(0) }}"
 
-      - name: "Peso Michele Grasso viscerale stato"
-        unique_id: peso_michele_viscerale_stato
-        availability: "{{ states('sensor.peso_michele_viscerale') not in ['unknown','unavailable'] }}"
+      - name: "Peso User1 Grasso viscerale stato"
+        unique_id: peso_user1_viscerale_stato
+        availability: "{{ states('sensor.peso_user1_viscerale') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_michele_viscerale') | int(0) %}
+          {% set v = states('sensor.peso_user1_viscerale') | int(0) %}
           {% if v < 1 %}sotto
           {% elif v <= 12 %}ottimale
           {% else %}sopra
@@ -627,38 +627,38 @@ template:
           range_min: 1
           range_max: 12
 
-      - name: "Peso Michele Metabolismo basale"
-        unique_id: peso_michele_calorie
+      - name: "Peso User1 Metabolismo basale"
+        unique_id: peso_user1_calorie
         unit_of_measurement: "kcal"
         state_class: measurement
         icon: mdi:fire
-        availability: "{{ state_attr('sensor.peso_michele', 'calorie_kcal') is not none }}"
-        state: "{{ state_attr('sensor.peso_michele', 'calorie_kcal') | int(0) }}"
+        availability: "{{ state_attr('sensor.peso_user1', 'calorie_kcal') is not none }}"
+        state: "{{ state_attr('sensor.peso_user1', 'calorie_kcal') | int(0) }}"
 
-      - name: "Peso Michele Scostamento mensile"
-        unique_id: peso_michele_scostamento
+      - name: "Peso User1 Scostamento mensile"
+        unique_id: peso_user1_scostamento
         unit_of_measurement: "%"
         icon: mdi:chart-line-variant
-        availability: "{{ state_attr('sensor.peso_michele', 'monthly_change_pct') is not none }}"
-        state: "{{ state_attr('sensor.peso_michele', 'monthly_change_pct') | float(0) | round(2) }}"
+        availability: "{{ state_attr('sensor.peso_user1', 'monthly_change_pct') is not none }}"
+        state: "{{ state_attr('sensor.peso_user1', 'monthly_change_pct') | float(0) | round(2) }}"
 
       # ------------------------------------------------------------
       # MARIA LUISA — donna 51 anni, 169 cm, range peso 49-55 kg
       # ------------------------------------------------------------
 
-      - name: "Peso Maria Luisa IMC"
-        unique_id: peso_maria_luisa_bmi
+      - name: "Peso User2 IMC"
+        unique_id: peso_user2_bmi
         unit_of_measurement: ""
         state_class: measurement
         icon: mdi:human-female
-        availability: "{{ state_attr('sensor.peso_maria_luisa', 'bmi') is not none }}"
-        state: "{{ state_attr('sensor.peso_maria_luisa', 'bmi') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user2', 'bmi') is not none }}"
+        state: "{{ state_attr('sensor.peso_user2', 'bmi') | float(0) | round(1) }}"
 
-      - name: "Peso Maria Luisa IMC stato"
-        unique_id: peso_maria_luisa_bmi_stato
-        availability: "{{ states('sensor.peso_maria_luisa_bmi') not in ['unknown','unavailable'] }}"
+      - name: "Peso User2 IMC stato"
+        unique_id: peso_user2_bmi_stato
+        availability: "{{ states('sensor.peso_user2_bmi') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_maria_luisa_bmi') | float(0) %}
+          {% set v = states('sensor.peso_user2_bmi') | float(0) %}
           {% if v < 18.5 %}sotto
           {% elif v <= 24.9 %}ottimale
           {% else %}sopra
@@ -667,19 +667,19 @@ template:
           range_min: 18.5
           range_max: 24.9
 
-      - name: "Peso Maria Luisa Massa grassa"
-        unique_id: peso_maria_luisa_grasso
+      - name: "Peso User2 Massa grassa"
+        unique_id: peso_user2_grasso
         unit_of_measurement: "%"
         state_class: measurement
         icon: mdi:water-percent
-        availability: "{{ state_attr('sensor.peso_maria_luisa', 'fat_percent') is not none }}"
-        state: "{{ state_attr('sensor.peso_maria_luisa', 'fat_percent') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user2', 'fat_percent') is not none }}"
+        state: "{{ state_attr('sensor.peso_user2', 'fat_percent') | float(0) | round(1) }}"
 
-      - name: "Peso Maria Luisa Massa grassa stato"
-        unique_id: peso_maria_luisa_grasso_stato
-        availability: "{{ states('sensor.peso_maria_luisa_grasso') not in ['unknown','unavailable'] }}"
+      - name: "Peso User2 Massa grassa stato"
+        unique_id: peso_user2_grasso_stato
+        availability: "{{ states('sensor.peso_user2_grasso') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_maria_luisa_grasso') | float(0) %}
+          {% set v = states('sensor.peso_user2_grasso') | float(0) %}
           {% if v < 24 %}sotto
           {% elif v <= 34 %}ottimale
           {% else %}sopra
@@ -688,19 +688,19 @@ template:
           range_min: 24
           range_max: 34
 
-      - name: "Peso Maria Luisa Acqua corporea"
-        unique_id: peso_maria_luisa_acqua
+      - name: "Peso User2 Acqua corporea"
+        unique_id: peso_user2_acqua
         unit_of_measurement: "%"
         state_class: measurement
         icon: mdi:water
-        availability: "{{ state_attr('sensor.peso_maria_luisa', 'water_percent') is not none }}"
-        state: "{{ state_attr('sensor.peso_maria_luisa', 'water_percent') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user2', 'water_percent') is not none }}"
+        state: "{{ state_attr('sensor.peso_user2', 'water_percent') | float(0) | round(1) }}"
 
-      - name: "Peso Maria Luisa Acqua corporea stato"
-        unique_id: peso_maria_luisa_acqua_stato
-        availability: "{{ states('sensor.peso_maria_luisa_acqua') not in ['unknown','unavailable'] }}"
+      - name: "Peso User2 Acqua corporea stato"
+        unique_id: peso_user2_acqua_stato
+        availability: "{{ states('sensor.peso_user2_acqua') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_maria_luisa_acqua') | float(0) %}
+          {% set v = states('sensor.peso_user2_acqua') | float(0) %}
           {% if v < 45 %}sotto
           {% elif v <= 60 %}ottimale
           {% else %}sopra
@@ -709,19 +709,19 @@ template:
           range_min: 45
           range_max: 60
 
-      - name: "Peso Maria Luisa Massa ossea"
-        unique_id: peso_maria_luisa_ossa
+      - name: "Peso User2 Massa ossea"
+        unique_id: peso_user2_ossa
         unit_of_measurement: "kg"
         state_class: measurement
         icon: mdi:bone
-        availability: "{{ state_attr('sensor.peso_maria_luisa', 'bone_kg') is not none }}"
-        state: "{{ state_attr('sensor.peso_maria_luisa', 'bone_kg') | float(0) | round(2) }}"
+        availability: "{{ state_attr('sensor.peso_user2', 'bone_kg') is not none }}"
+        state: "{{ state_attr('sensor.peso_user2', 'bone_kg') | float(0) | round(2) }}"
 
-      - name: "Peso Maria Luisa Massa ossea stato"
-        unique_id: peso_maria_luisa_ossa_stato
-        availability: "{{ states('sensor.peso_maria_luisa_ossa') not in ['unknown','unavailable'] }}"
+      - name: "Peso User2 Massa ossea stato"
+        unique_id: peso_user2_ossa_stato
+        availability: "{{ states('sensor.peso_user2_ossa') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_maria_luisa_ossa') | float(0) %}
+          {% set v = states('sensor.peso_user2_ossa') | float(0) %}
           {% if v < 2.2 %}sotto
           {% elif v <= 2.8 %}ottimale
           {% else %}sopra
@@ -730,19 +730,19 @@ template:
           range_min: 2.2
           range_max: 2.8
 
-      - name: "Peso Maria Luisa Massa muscolare"
-        unique_id: peso_maria_luisa_muscoli
+      - name: "Peso User2 Massa muscolare"
+        unique_id: peso_user2_muscoli
         unit_of_measurement: "kg"
         state_class: measurement
         icon: mdi:arm-flex
-        availability: "{{ state_attr('sensor.peso_maria_luisa', 'muscle_kg') is not none }}"
-        state: "{{ state_attr('sensor.peso_maria_luisa', 'muscle_kg') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user2', 'muscle_kg') is not none }}"
+        state: "{{ state_attr('sensor.peso_user2', 'muscle_kg') | float(0) | round(1) }}"
 
-      - name: "Peso Maria Luisa Massa muscolare stato"
-        unique_id: peso_maria_luisa_muscoli_stato
-        availability: "{{ states('sensor.peso_maria_luisa_muscoli') not in ['unknown','unavailable'] }}"
+      - name: "Peso User2 Massa muscolare stato"
+        unique_id: peso_user2_muscoli_stato
+        availability: "{{ states('sensor.peso_user2_muscoli') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_maria_luisa_muscoli') | float(0) %}
+          {% set v = states('sensor.peso_user2_muscoli') | float(0) %}
           {% if v < 16 %}sotto
           {% elif v <= 22 %}ottimale
           {% else %}sopra
@@ -751,19 +751,19 @@ template:
           range_min: 16
           range_max: 22
 
-      - name: "Peso Maria Luisa Grasso viscerale"
-        unique_id: peso_maria_luisa_viscerale
+      - name: "Peso User2 Grasso viscerale"
+        unique_id: peso_user2_viscerale
         unit_of_measurement: ""
         state_class: measurement
         icon: mdi:stomach
-        availability: "{{ state_attr('sensor.peso_maria_luisa', 'visceral_fat') is not none }}"
-        state: "{{ state_attr('sensor.peso_maria_luisa', 'visceral_fat') | int(0) }}"
+        availability: "{{ state_attr('sensor.peso_user2', 'visceral_fat') is not none }}"
+        state: "{{ state_attr('sensor.peso_user2', 'visceral_fat') | int(0) }}"
 
-      - name: "Peso Maria Luisa Grasso viscerale stato"
-        unique_id: peso_maria_luisa_viscerale_stato
-        availability: "{{ states('sensor.peso_maria_luisa_viscerale') not in ['unknown','unavailable'] }}"
+      - name: "Peso User2 Grasso viscerale stato"
+        unique_id: peso_user2_viscerale_stato
+        availability: "{{ states('sensor.peso_user2_viscerale') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_maria_luisa_viscerale') | int(0) %}
+          {% set v = states('sensor.peso_user2_viscerale') | int(0) %}
           {% if v < 1 %}sotto
           {% elif v <= 9 %}ottimale
           {% else %}sopra
@@ -772,39 +772,39 @@ template:
           range_min: 1
           range_max: 9
 
-      - name: "Peso Maria Luisa Metabolismo basale"
-        unique_id: peso_maria_luisa_calorie
+      - name: "Peso User2 Metabolismo basale"
+        unique_id: peso_user2_calorie
         unit_of_measurement: "kcal"
         state_class: measurement
         icon: mdi:fire
-        availability: "{{ state_attr('sensor.peso_maria_luisa', 'calorie_kcal') is not none }}"
-        state: "{{ state_attr('sensor.peso_maria_luisa', 'calorie_kcal') | int(0) }}"
+        availability: "{{ state_attr('sensor.peso_user2', 'calorie_kcal') is not none }}"
+        state: "{{ state_attr('sensor.peso_user2', 'calorie_kcal') | int(0) }}"
 
-      - name: "Peso Maria Luisa Scostamento mensile"
-        unique_id: peso_maria_luisa_scostamento
+      - name: "Peso User2 Scostamento mensile"
+        unique_id: peso_user2_scostamento
         unit_of_measurement: "%"
         icon: mdi:chart-line-variant
-        availability: "{{ state_attr('sensor.peso_maria_luisa', 'monthly_change_pct') is not none }}"
-        state: "{{ state_attr('sensor.peso_maria_luisa', 'monthly_change_pct') | float(0) | round(2) }}"
+        availability: "{{ state_attr('sensor.peso_user2', 'monthly_change_pct') is not none }}"
+        state: "{{ state_attr('sensor.peso_user2', 'monthly_change_pct') | float(0) | round(2) }}"
 
       # ------------------------------------------------------------
-      # MATILDE — ragazza 14 anni, 155 cm, range peso 53-60 kg
+      # USER3 — ragazza 14 anni, 155 cm, range peso 53-60 kg
       # Range pediatrici/adolescenti (riferimenti WHO/IOTF, indicativi)
       # ------------------------------------------------------------
 
-      - name: "Peso Matilde IMC"
-        unique_id: peso_matilde_bmi
+      - name: "Peso User3 IMC"
+        unique_id: peso_user3_bmi
         unit_of_measurement: ""
         state_class: measurement
         icon: mdi:human-female-girl
-        availability: "{{ state_attr('sensor.peso_matilde', 'bmi') is not none }}"
-        state: "{{ state_attr('sensor.peso_matilde', 'bmi') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user3', 'bmi') is not none }}"
+        state: "{{ state_attr('sensor.peso_user3', 'bmi') | float(0) | round(1) }}"
 
-      - name: "Peso Matilde IMC stato"
-        unique_id: peso_matilde_bmi_stato
-        availability: "{{ states('sensor.peso_matilde_bmi') not in ['unknown','unavailable'] }}"
+      - name: "Peso User3 IMC stato"
+        unique_id: peso_user3_bmi_stato
+        availability: "{{ states('sensor.peso_user3_bmi') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_matilde_bmi') | float(0) %}
+          {% set v = states('sensor.peso_user3_bmi') | float(0) %}
           {% if v < 16.5 %}sotto
           {% elif v <= 23 %}ottimale
           {% else %}sopra
@@ -813,19 +813,19 @@ template:
           range_min: 16.5
           range_max: 23
 
-      - name: "Peso Matilde Massa grassa"
-        unique_id: peso_matilde_grasso
+      - name: "Peso User3 Massa grassa"
+        unique_id: peso_user3_grasso
         unit_of_measurement: "%"
         state_class: measurement
         icon: mdi:water-percent
-        availability: "{{ state_attr('sensor.peso_matilde', 'fat_percent') is not none }}"
-        state: "{{ state_attr('sensor.peso_matilde', 'fat_percent') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user3', 'fat_percent') is not none }}"
+        state: "{{ state_attr('sensor.peso_user3', 'fat_percent') | float(0) | round(1) }}"
 
-      - name: "Peso Matilde Massa grassa stato"
-        unique_id: peso_matilde_grasso_stato
-        availability: "{{ states('sensor.peso_matilde_grasso') not in ['unknown','unavailable'] }}"
+      - name: "Peso User3 Massa grassa stato"
+        unique_id: peso_user3_grasso_stato
+        availability: "{{ states('sensor.peso_user3_grasso') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_matilde_grasso') | float(0) %}
+          {% set v = states('sensor.peso_user3_grasso') | float(0) %}
           {% if v < 17 %}sotto
           {% elif v <= 28 %}ottimale
           {% else %}sopra
@@ -834,19 +834,19 @@ template:
           range_min: 17
           range_max: 28
 
-      - name: "Peso Matilde Acqua corporea"
-        unique_id: peso_matilde_acqua
+      - name: "Peso User3 Acqua corporea"
+        unique_id: peso_user3_acqua
         unit_of_measurement: "%"
         state_class: measurement
         icon: mdi:water
-        availability: "{{ state_attr('sensor.peso_matilde', 'water_percent') is not none }}"
-        state: "{{ state_attr('sensor.peso_matilde', 'water_percent') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user3', 'water_percent') is not none }}"
+        state: "{{ state_attr('sensor.peso_user3', 'water_percent') | float(0) | round(1) }}"
 
-      - name: "Peso Matilde Acqua corporea stato"
-        unique_id: peso_matilde_acqua_stato
-        availability: "{{ states('sensor.peso_matilde_acqua') not in ['unknown','unavailable'] }}"
+      - name: "Peso User3 Acqua corporea stato"
+        unique_id: peso_user3_acqua_stato
+        availability: "{{ states('sensor.peso_user3_acqua') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_matilde_acqua') | float(0) %}
+          {% set v = states('sensor.peso_user3_acqua') | float(0) %}
           {% if v < 55 %}sotto
           {% elif v <= 65 %}ottimale
           {% else %}sopra
@@ -855,19 +855,19 @@ template:
           range_min: 55
           range_max: 65
 
-      - name: "Peso Matilde Massa ossea"
-        unique_id: peso_matilde_ossa
+      - name: "Peso User3 Massa ossea"
+        unique_id: peso_user3_ossa
         unit_of_measurement: "kg"
         state_class: measurement
         icon: mdi:bone
-        availability: "{{ state_attr('sensor.peso_matilde', 'bone_kg') is not none }}"
-        state: "{{ state_attr('sensor.peso_matilde', 'bone_kg') | float(0) | round(2) }}"
+        availability: "{{ state_attr('sensor.peso_user3', 'bone_kg') is not none }}"
+        state: "{{ state_attr('sensor.peso_user3', 'bone_kg') | float(0) | round(2) }}"
 
-      - name: "Peso Matilde Massa ossea stato"
-        unique_id: peso_matilde_ossa_stato
-        availability: "{{ states('sensor.peso_matilde_ossa') not in ['unknown','unavailable'] }}"
+      - name: "Peso User3 Massa ossea stato"
+        unique_id: peso_user3_ossa_stato
+        availability: "{{ states('sensor.peso_user3_ossa') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_matilde_ossa') | float(0) %}
+          {% set v = states('sensor.peso_user3_ossa') | float(0) %}
           {% if v < 2.0 %}sotto
           {% elif v <= 2.6 %}ottimale
           {% else %}sopra
@@ -876,19 +876,19 @@ template:
           range_min: 2.0
           range_max: 2.6
 
-      - name: "Peso Matilde Massa muscolare"
-        unique_id: peso_matilde_muscoli
+      - name: "Peso User3 Massa muscolare"
+        unique_id: peso_user3_muscoli
         unit_of_measurement: "kg"
         state_class: measurement
         icon: mdi:arm-flex
-        availability: "{{ state_attr('sensor.peso_matilde', 'muscle_kg') is not none }}"
-        state: "{{ state_attr('sensor.peso_matilde', 'muscle_kg') | float(0) | round(1) }}"
+        availability: "{{ state_attr('sensor.peso_user3', 'muscle_kg') is not none }}"
+        state: "{{ state_attr('sensor.peso_user3', 'muscle_kg') | float(0) | round(1) }}"
 
-      - name: "Peso Matilde Massa muscolare stato"
-        unique_id: peso_matilde_muscoli_stato
-        availability: "{{ states('sensor.peso_matilde_muscoli') not in ['unknown','unavailable'] }}"
+      - name: "Peso User3 Massa muscolare stato"
+        unique_id: peso_user3_muscoli_stato
+        availability: "{{ states('sensor.peso_user3_muscoli') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_matilde_muscoli') | float(0) %}
+          {% set v = states('sensor.peso_user3_muscoli') | float(0) %}
           {% if v < 15 %}sotto
           {% elif v <= 20 %}ottimale
           {% else %}sopra
@@ -897,19 +897,19 @@ template:
           range_min: 15
           range_max: 20
 
-      - name: "Peso Matilde Grasso viscerale"
-        unique_id: peso_matilde_viscerale
+      - name: "Peso User3 Grasso viscerale"
+        unique_id: peso_user3_viscerale
         unit_of_measurement: ""
         state_class: measurement
         icon: mdi:stomach
-        availability: "{{ state_attr('sensor.peso_matilde', 'visceral_fat') is not none }}"
-        state: "{{ state_attr('sensor.peso_matilde', 'visceral_fat') | int(0) }}"
+        availability: "{{ state_attr('sensor.peso_user3', 'visceral_fat') is not none }}"
+        state: "{{ state_attr('sensor.peso_user3', 'visceral_fat') | int(0) }}"
 
-      - name: "Peso Matilde Grasso viscerale stato"
-        unique_id: peso_matilde_viscerale_stato
-        availability: "{{ states('sensor.peso_matilde_viscerale') not in ['unknown','unavailable'] }}"
+      - name: "Peso User3 Grasso viscerale stato"
+        unique_id: peso_user3_viscerale_stato
+        availability: "{{ states('sensor.peso_user3_viscerale') not in ['unknown','unavailable'] }}"
         state: >
-          {% set v = states('sensor.peso_matilde_viscerale') | int(0) %}
+          {% set v = states('sensor.peso_user3_viscerale') | int(0) %}
           {% if v < 1 %}sotto
           {% elif v <= 4 %}ottimale
           {% else %}sopra
@@ -918,17 +918,17 @@ template:
           range_min: 1
           range_max: 4
 
-      - name: "Peso Matilde Metabolismo basale"
-        unique_id: peso_matilde_calorie
+      - name: "Peso User3 Metabolismo basale"
+        unique_id: peso_user3_calorie
         unit_of_measurement: "kcal"
         state_class: measurement
         icon: mdi:fire
-        availability: "{{ state_attr('sensor.peso_matilde', 'calorie_kcal') is not none }}"
-        state: "{{ state_attr('sensor.peso_matilde', 'calorie_kcal') | int(0) }}"
+        availability: "{{ state_attr('sensor.peso_user3', 'calorie_kcal') is not none }}"
+        state: "{{ state_attr('sensor.peso_user3', 'calorie_kcal') | int(0) }}"
 
-      - name: "Peso Matilde Scostamento mensile"
-        unique_id: peso_matilde_scostamento
+      - name: "Peso User3 Scostamento mensile"
+        unique_id: peso_user3_scostamento
         unit_of_measurement: "%"
         icon: mdi:chart-line-variant
-        availability: "{{ state_attr('sensor.peso_matilde', 'monthly_change_pct') is not none }}"
-        state: "{{ state_attr('sensor.peso_matilde', 'monthly_change_pct') | float(0) | round(2) }}"
+        availability: "{{ state_attr('sensor.peso_user3', 'monthly_change_pct') is not none }}"
+        state: "{{ state_attr('sensor.peso_user3', 'monthly_change_pct') | float(0) | round(2) }}"
