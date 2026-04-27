@@ -401,16 +401,16 @@ automation:
             clickAction: "weighai://main"
 
   # ----------------------------------------------------------
-  # Weekly digest AI — domenica 21:00 manda via Telegram un
+  # Weekly digest AI — domenica 12:00 manda via Telegram un
   # riassunto delle pesate dei 7 giorni precedenti, generato
   # da Gemini 3.1 Flash Lite Preview.
   # ----------------------------------------------------------
-  - alias: "Bilancia · Weekly digest AI (domenica 21:00)"
+  - alias: "Bilancia · Weekly digest AI (domenica 12:00)"
     id: bilancia_weekly_digest
     mode: single
     trigger:
       - platform: time
-        at: "21:00:00"
+        at: "12:00:00"
     condition:
       - condition: time
         weekday:
