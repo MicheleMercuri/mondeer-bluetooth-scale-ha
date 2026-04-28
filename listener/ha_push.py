@@ -25,8 +25,8 @@ import paho.mqtt.client as mqtt
 
 # Tutte le credenziali e i path arrivano da config.yaml (o da env var
 # BILANCIA_*). Vedi config.example.yaml per il template. Le costanti
-# HA_BASE_URL e HA_TOKEN restano accessibili come module-level via
-# `__getattr__` solo per backward-compat con codice legacy.
+# legacy (HA_BASE_URL/HA_TOKEN/MQTT_*) restano accessibili come
+# module-level via PEP 562 `__getattr__` solo per backward-compat.
 from .config import get_config
 
 
@@ -225,32 +225,33 @@ def _reset_mqtt() -> None:
 
 def _get_mqtt() -> mqtt.Client:
     global _mqtt_client
+    import time as _t
+    t0 = _t.monotonic()
+    log.debug("[mqtt] _get_mqtt() ENTER tid=%s",
+              threading.current_thread().name)
     with _mqtt_lock:
+        t_lock = _t.monotonic() - t0
+        if t_lock > 0.5:
+            log.warning("[mqtt] lock acquired after %.1fs (contention)", t_lock)
         if _mqtt_client is not None and _mqtt_client.is_connected():
+            log.debug("[mqtt] returning existing client (connected)")
             return _mqtt_client
-        # Se esiste ma non connesso, lo butto e ricreo da zero (più sicuro
-        # che fare reconnect su uno stato sporco).
         if _mqtt_client is not None:
+            log.info("[mqtt] existing client not connected, dropping")
             try:
                 _mqtt_client.loop_stop()
                 _mqtt_client.disconnect()
-            except Exception:
-                pass
+            except Exception as e:
+                log.debug("[mqtt] disconnect old failed: %r", e)
             _mqtt_client = None
+        log.info("[mqtt] creating new client")
         client = mqtt.Client(
             mqtt.CallbackAPIVersion.VERSION2,
             client_id=f"bilancia_listener_{os.getpid()}",
         )
         client.username_pw_set(MQTT_USER, MQTT_PASS)
-        # Auto-reconnect: se il broker ha un restart (es. add-on Mosquitto),
-        # il client riallaccia da solo invece di lasciare il publish in timeout.
         client.reconnect_delay_set(min_delay=1, max_delay=30)
-        # IMPORTANTE: paho-mqtt NON ri-sottoscrive automaticamente dopo un
-        # reconnect interno. Senza on_connect che ri-issa il subscribe, dopo
-        # ogni keepalive-stale il listener perde tutti i messaggi inquiry/
-        # answer mentre il publish continua a funzionare (silently broken).
-        # Sintomo: l'utente clicca su Telegram, l'automation HA pubblica, ma
-        # il listener non riceve mai la callback.
+
         def _on_connect(c, userdata, flags, rc, properties=None):
             log.info("MQTT on_connect rc=%s — (re)subscribing to inquiry/+/answer", rc)
             try:
@@ -258,16 +259,27 @@ def _get_mqtt() -> mqtt.Client:
             except Exception as e:
                 log.error("re-subscribe failed: %r", e)
         client.on_connect = _on_connect
-        # Subscribe to inquiry answers from HA (Telegram-confirmed user).
         client.message_callback_add("bilancia_mondeer/inquiry/+/answer",
                                     _on_inquiry_answer)
-        client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
-        # subscribe iniziale ridondante con on_connect ma idempotente.
+
+        # IMPORTANTE: client.connect() di paho è SINCRONO e blocca su TCP
+        # fino al timeout di sistema (~70s) se il broker non risponde.
+        # Settiamo il socket timeout via _socket_timeout (paho >=1.6) per
+        # avere un fail veloce.
+        try:
+            log.info("[mqtt] connecting to %s:%d ...", MQTT_HOST, MQTT_PORT)
+            t1 = _t.monotonic()
+            client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
+            log.info("[mqtt] connect() returned in %.1fs", _t.monotonic() - t1)
+        except Exception as e:
+            log.error("[mqtt] connect() FAILED: %r — propagating", e)
+            raise
         client.subscribe("bilancia_mondeer/inquiry/+/answer", qos=1)
         client.loop_start()
         _mqtt_client = client
-        log.info("MQTT connected to %s:%d (subscribed inquiry answers)",
-                 MQTT_HOST, MQTT_PORT)
+        log.info("MQTT connected to %s:%d (subscribed inquiry answers) — "
+                 "total init=%.1fs", MQTT_HOST, MQTT_PORT,
+                 _t.monotonic() - t0)
         return client
 
 

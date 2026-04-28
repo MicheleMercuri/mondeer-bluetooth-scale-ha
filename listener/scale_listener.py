@@ -350,7 +350,9 @@ def record_pesata(user: str, weight_kg: float, is_complete: bool) -> None:
 
 def _status_publisher_thread():
     import time as _t
+    import json as _j
     from .ha_push import publish_status
+    heartbeat_path = os.path.join(_log_dir, "heartbeat.json")
     while True:
         try:
             snapshot = dict(_STATUS)
@@ -361,6 +363,19 @@ def _status_publisher_thread():
             snapshot["success_rate"] = round(100 * s / a, 1) if a else None
             snapshot["consecutive_fail"] = _METRICS.get("consecutive_failed_sessions", 0)
             publish_status(snapshot)
+        except Exception:
+            pass
+        # Heartbeat file: scritto SEMPRE (anche se publish_status fallisce),
+        # serve al watchdog PowerShell per capire se il processo è zombie.
+        # Path: %LOCALAPPDATA%/BilanciaMondeer/heartbeat.json
+        try:
+            with open(heartbeat_path, "w", encoding="utf-8") as f:
+                _j.dump({
+                    "ts": int(_t.time()),
+                    "iso": _dt.now().isoformat(timespec="seconds"),
+                    "phase": _STATUS.get("phase"),
+                    "pid": os.getpid(),
+                }, f)
         except Exception:
             pass
         _t.sleep(30)
@@ -912,18 +927,25 @@ async def _mqtt_health_loop() -> None:
     nel frattempo la SUBSCRIBE è morta — l'utente clicca Telegram, HA
     pubblica l'answer, ma il listener non lo riceve.
 
-    Questo task gira ogni 30s, chiama `_get_mqtt()` (che ricrea il client
-    se non connesso, riapplicando la subscribe via on_connect) e tiene
-    il listener "raggiungibile" da HA in modo stabile.
+    NB: `_get_mqtt()` è SYNC e contiene `client.connect()` che blocca su
+    TCP fino a 60s+ se il broker non risponde. Lo eseguiamo via
+    `asyncio.to_thread()` per non bloccare il loop principale (BLE
+    scanner) mentre attendiamo la riconnessione MQTT.
     """
     from .ha_push import _get_mqtt
+    iteration = 0
     while True:
+        iteration += 1
         try:
-            client = _get_mqtt()
-            if not client.is_connected():
-                log.warning("MQTT health: client disconnected, will reconnect")
+            log.debug("[health] iter=%d calling _get_mqtt() in thread", iteration)
+            client = await asyncio.to_thread(_get_mqtt)
+            connected = client.is_connected()
+            if iteration % 10 == 0 or not connected:
+                log.info("[health] iter=%d connected=%s", iteration, connected)
+            if not connected:
+                log.warning("[health] iter=%d client reports disconnected", iteration)
         except Exception as e:
-            log.warning("MQTT health-check failed: %r", e)
+            log.warning("[health] iter=%d FAILED: %r", iteration, e)
         await asyncio.sleep(30)
 
 
@@ -961,14 +983,33 @@ async def main() -> None:
     scanner = BleakScanner(detection_callback=on_detection)
     await scanner.start()
     try:
+        iter_count = 0
         while True:
+            iter_count += 1
+            log.debug("[main] iter=%d waiting for queue.get()", iter_count)
             device = await queue.get()
-            await scanner.stop()
+            log.info("[main] iter=%d got device %s", iter_count, device.address)
+            try:
+                await scanner.stop()
+                log.debug("[main] iter=%d scanner.stop() OK, calling handle_device",
+                          iter_count)
+            except Exception as e:
+                log.warning("[main] iter=%d scanner.stop() failed: %r",
+                            iter_count, e)
             try:
                 await handle_device(device)
+                log.debug("[main] iter=%d handle_device returned", iter_count)
+            except Exception as e:
+                log.error("[main] iter=%d handle_device EXCEPTION: %r",
+                          iter_count, e, exc_info=True)
             finally:
-                await scanner.start()
-                log.info("resumed scan, waiting for next pesata")
+                try:
+                    await scanner.start()
+                    log.info("[main] iter=%d resumed scan, waiting for next pesata",
+                             iter_count)
+                except Exception as e:
+                    log.error("[main] iter=%d scanner.start() FAILED: %r",
+                              iter_count, e, exc_info=True)
     finally:
         await scanner.stop()
 
