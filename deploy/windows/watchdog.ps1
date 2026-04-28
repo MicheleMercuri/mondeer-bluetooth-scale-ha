@@ -62,6 +62,17 @@ function Restart-Listener {
 
 # === main ===
 
+# Quiet hours: durante 23:00–05:30 il listener è volutamente fermo
+# (task MondeerScaleListener-Sleep / -Wake). Saltiamo il check, altrimenti
+# il watchdog vedrebbe heartbeat vecchio e cancellerebbe le quiet hours.
+$h = (Get-Date).Hour
+$m = (Get-Date).Minute
+$inQuietHours = ($h -ge 23) -or ($h -lt 5) -or ($h -eq 5 -and $m -lt 30)
+if ($inQuietHours) {
+    Write-Log "quiet hours (now=${h}:${m}) — skipping watchdog check"
+    exit 0
+}
+
 if (-not (Test-Path $HeartbeatPath)) {
     Write-Log "heartbeat file not found at $HeartbeatPath — listener has never run? skipping"
     exit 0
